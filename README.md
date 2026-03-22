@@ -131,6 +131,20 @@ Optional automation via GitHub Actions:
 2. `.github/workflows/sync-master-into-skycms-main.yml`
 	Manual-only workflow. Run this when you are ready to review baseline changes in `skycms/main`. It opens or updates a PR into `skycms/main`.
 
+#### SkyCMS editor asset sync
+
+To sync built CKEditor assets from this repository into the SkyCMS Editor application, use:
+
+```powershell
+pwsh -NoProfile -File .\sync-ckeditor5-to-editor.ps1
+```
+
+This script copies CKEditor distribution files (JS/CSS/browser/translations/license) into the SkyCMS Editor `wwwroot/lib/ckeditor` folder.
+
+For the full SkyCMS integration workflow (including building and deploying `skycms-plugins.js`), see:
+
+- `integrations/skycms/README.md`
+
 ### Reporting issues and feature requests
 
 Report issues in [the `ckeditor5` repository](https://github.com/ckeditor/ckeditor5/issues). Read more in the [Getting support](https://ckeditor.com/docs/ckeditor5/latest/support/index.html#reporting-issues) section of the CKEditor 5 documentation.
