@@ -80,7 +80,7 @@ export class Autosave extends Plugin {
 	 * Debounced save method. The `save()` method is called the specified `waitingTime` after `debouncedSave()` is called,
 	 * unless a new action happens in the meantime.
 	 */
-	private _debouncedSave: ReturnType<typeof debounce<() => void>>;
+	private _debouncedSave: ReturnType<typeof debounce<() => Promise<void>>>;
 
 	/**
 	 * The last saved document version.
