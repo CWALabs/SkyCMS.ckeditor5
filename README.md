@@ -1,21 +1,25 @@
-CKEditor&nbsp;5 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Check%20out%20CKEditor%205%20on%20GitHub&url=https%3A%2F%2Fgithub.com%2Fckeditor%2Fckeditor5)<!-- omit in toc -->
+SkyCMS CKEditor 5 Integration<!-- omit in toc -->
 ===================================
 
-[![npm version](https://badge.fury.io/js/ckeditor5.svg)](https://www.npmjs.com/package/ckeditor5)
-[![codecov](https://codecov.io/gh/ckeditor/ckeditor5/branch/master/graph/badge.svg)](https://codecov.io/gh/ckeditor/ckeditor5)
-[![CircleCI](https://circleci.com/gh/ckeditor/ckeditor5.svg?style=shield)](https://app.circleci.com/pipelines/github/ckeditor/ckeditor5?branch=master)
-![TypeScript Support](https://badgen.net/badge/Built%20With/TypeScript/blue)
+This repository is the SkyCMS-maintained CKEditor 5 integration. It exists to keep the SkyCMS editor implementation current with upstream CKEditor fixes and features while preserving SkyCMS-specific plugins, runtime behavior, and deployment assets.
 
-[![Join newsletter](https://img.shields.io/badge/join-newsletter-00cc99.svg)](http://eepurl.com/c3zRPr)
-[![Follow Twitter](https://img.shields.io/badge/follow-twitter-00cc99.svg)](https://twitter.com/ckeditor)
+This is a downstream integration repository, not a contribution fork. Upstream CKEditor development still happens in the official `ckeditor/ckeditor5` repository, while this repository packages and validates the version of CKEditor used by SkyCMS.
 
-CKEditor&nbsp;5 is a modern JavaScript rich-text editor with MVC architecture, custom data model, and virtual DOM, written from scratch in TypeScript with excellent support for modern bundlers. It provides every type of WYSIWYG editing solution imaginable with extensive collaboration support. From editors similar to Google Docs and Medium to Slack or Twitter-like applications, all is possible within a single editing framework. As a market leader, it is constantly expanded and updated.
+Branch intent:
+
+* `skycms/main` is the SkyCMS product branch and the default branch that should be shown to repository visitors.
+* `vendor/ckeditor5` is the upstream mirror branch synced from CKEditor.
+* Upstream updates are reviewed into `skycms/main` by pull request after SkyCMS validation.
+
+For the official CKEditor 5 project, documentation, and contribution guidelines, see [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
 
 ![A composition of screenshots presenting various features of CKEditor&nbsp;5 rich text editor](https://raw.githubusercontent.com/ckeditor/ckeditor5/master/docs/assets/img/CKEditor-5.png)
 
 ## Table of contents<!-- omit in toc -->
 
 - [Quick start](#quick-start)
+	- [Repository purpose](#repository-purpose)
+	- [Branch model](#branch-model)
 	- [CKEditor 5 Builder](#ckeditor-5-builder)
 	- [TypeScript support](#typescript-support)
 	- [CKEditor 5 advanced installation](#ckeditor-5-advanced-installation)
@@ -32,6 +36,33 @@ CKEditor&nbsp;5 is a modern JavaScript rich-text editor with MVC architecture, c
 - [License](#license)
 
 ## Quick start
+
+### Repository purpose
+
+Use this repository when you need to:
+
+* maintain the CKEditor build deployed by SkyCMS,
+* develop or validate SkyCMS-specific CKEditor plugins under `integrations/skycms/`,
+* mirror upstream CKEditor updates into a controlled vendor branch,
+* review upstream changes before promoting them into the SkyCMS product branch.
+
+If you want the upstream CKEditor source repository for contribution or general framework development, use [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
+
+### Branch model
+
+This repository follows a vendor-mirror workflow:
+
+* `skycms/main` is the SkyCMS customization and deployment branch.
+* `vendor/ckeditor5` mirrors the selected upstream CKEditor branch.
+* `master` is considered legacy if it still exists and should not be used for new work.
+
+The sync sequence is:
+
+1. Mirror upstream into `vendor/ckeditor5`.
+2. Open a pull request from `vendor/ckeditor5` into `skycms/main`.
+3. Review, test, and merge only after SkyCMS validation.
+
+See `FORK_MAINTENANCE_CHECKLIST.md` for the GitHub setup and first-run steps.
 
 Refer to the [Quick Start](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/quick-start.html) guide to learn more about CKEditor&nbsp;5 installation.
 
@@ -101,16 +132,16 @@ CKEditor&nbsp;5 is a modular, multi-package, [monorepo](https://en.wikipedia.org
 
 The [`ckeditor5`](https://github.com/ckeditor/ckeditor5) repository is the place that centralizes the development of CKEditor&nbsp;5. It bundles different packages into a single place, adding the necessary helper tools for the development workflow, like the builder and the test runner. [Basic information on how to set up the development environment](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/development-environment.html) can be found in the documentation.
 
-See the [official contributors' guide](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/contributing.html) to learn how to contribute your code to the project.
+Use this repository for SkyCMS integration work. If you intend to contribute to CKEditor itself, use the [official contributors' guide](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/contributing.html) and work against the upstream project.
 
 ### Fork maintenance (SkyCMS)
 
-This fork uses two long-lived branches:
+This repository uses a SkyCMS-first branch model:
 
-* `master` is the upstream-tracking baseline. Keep it aligned with `upstream/master`.
-* `skycms/main` is the SkyCMS customization branch. Merge upstream updates into this branch after syncing `master`.
+* `skycms/main` is the SkyCMS customization and deployment branch.
+* `vendor/ckeditor5` is the upstream-tracking mirror branch synced from CKEditor.
 
-Use the sync script in this repository to keep both branches current:
+Use the sync script in this repository to refresh the vendor mirror branch:
 
 ```powershell
 pwsh ./scripts/sync-fork.ps1
@@ -119,17 +150,30 @@ pwsh ./scripts/sync-fork.ps1
 What the script does:
 
 1. Verifies the working tree is clean.
-2. Checks out `master`, fetches `upstream`, merges `upstream/master`, and pushes `origin/master`.
-3. Checks out `skycms/main`, merges `upstream/master`, and pushes `origin/skycms/main`.
+2. Fetches the configured upstream branch, defaulting to `upstream/stable`.
+3. Resets `vendor/ckeditor5` to exactly match that upstream ref.
+4. Optionally pushes `vendor/ckeditor5` to `origin` when `-Push` is used.
 
-If a merge conflict occurs, resolve it locally, complete the merge, and push.
+Promotion into `skycms/main` is intentionally not done by this script. That step happens through review.
 
-Optional automation via GitHub Actions:
+Supported examples:
 
-1. `.github/workflows/sync-upstream-master.yml`
-	Runs on a schedule (weekly) and also supports manual runs. It opens or updates a PR from an automation branch into `master`.
-2. `.github/workflows/sync-master-into-skycms-main.yml`
-	Manual-only workflow. Run this when you are ready to review baseline changes in `skycms/main`. It opens or updates a PR into `skycms/main`.
+```powershell
+# Preview only
+pwsh ./scripts/sync-fork.ps1 -WhatIf
+
+# Mirror upstream/stable into vendor/ckeditor5 and push to origin
+pwsh ./scripts/sync-fork.ps1 -Push
+```
+
+GitHub Actions automation:
+
+1. `.github/workflows/sync-upstream-vendor-branch.yml`
+	Runs weekly and also supports manual runs. It mirrors the configured upstream branch into `vendor/ckeditor5`.
+2. `.github/workflows/open-vendor-pr-into-skycms-main.yml`
+	Manual-only workflow. Run this when you are ready to review upstream changes in `skycms/main`. It creates or reuses a PR from `vendor/ckeditor5` into `skycms/main`.
+
+For GitHub settings, branch protection, and first-run validation, see `FORK_MAINTENANCE_CHECKLIST.md`.
 
 #### SkyCMS editor asset sync
 
