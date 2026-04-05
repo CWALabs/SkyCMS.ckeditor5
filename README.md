@@ -15,26 +15,10 @@ For the official CKEditor 5 project, documentation, and contribution guidelines,
 
 ![A composition of screenshots presenting various features of CKEditor&nbsp;5 rich text editor](https://raw.githubusercontent.com/ckeditor/ckeditor5/master/docs/assets/img/CKEditor-5.png)
 
-## Table of contents<!-- omit in toc -->
+Quick start
+-----------
 
-- [Quick start](#quick-start)
-	- [Repository purpose](#repository-purpose)
-	- [Branch model](#branch-model)
-	- [Maintainer quick start](#maintainer-quick-start)
-	- [SkyCMS integration workspace](#skycms-integration-workspace)
-	- [Upstream CKEditor resources](#upstream-ckeditor-resources)
-- [Documentation and support](#documentation-and-support)
-- [Release and sync model](#release-and-sync-model)
-- [Contributing and project organization](#contributing-and-project-organization)
-	- [Ideas and discussions](#ideas-and-discussions)
-	- [Development](#development)
-	- [Fork maintenance (SkyCMS)](#fork-maintenance-skycms)
-	- [Reporting issues and feature requests](#reporting-issues-and-feature-requests)
-- [License](#license)
-
-## Quick start
-
-### Repository purpose
+Repository purpose:
 
 Use this repository when you need to:
 
@@ -45,7 +29,7 @@ Use this repository when you need to:
 
 If you want the upstream CKEditor source repository for contribution or general framework development, use [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
 
-### Branch model
+Branch model:
 
 This repository follows a vendor-mirror workflow:
 
@@ -61,7 +45,7 @@ The sync sequence is:
 
 See `FORK_MAINTENANCE_CHECKLIST.md` for the GitHub setup and first-run steps.
 
-### Maintainer quick start
+Maintainer quick start:
 
 From the repository root:
 
@@ -77,7 +61,7 @@ Useful commands:
 * `pnpm --filter @skycms/ckeditor-integration test`
 * `pwsh ./scripts/sync-fork.ps1 -WhatIf`
 
-### SkyCMS integration workspace
+SkyCMS integration workspace:
 
 The SkyCMS-specific code lives under `integrations/skycms/` and includes:
 
@@ -87,7 +71,7 @@ The SkyCMS-specific code lives under `integrations/skycms/` and includes:
 
 Start there when you need to validate or extend the SkyCMS editor behavior.
 
-### Upstream CKEditor resources
+Upstream CKEditor resources:
 
 When you need official CKEditor guidance, use the upstream resources:
 
@@ -96,7 +80,8 @@ When you need official CKEditor guidance, use the upstream resources:
 * [Framework overview](https://ckeditor.com/docs/ckeditor5/latest/framework/index.html)
 * [API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/index.html)
 
-## Documentation and support
+Documentation and support
+-------------------------
 
 For SkyCMS integration workflow details, start with `integrations/skycms/README.md` and `FORK_MAINTENANCE_CHECKLIST.md`.
 
@@ -111,7 +96,8 @@ For CKEditor framework documentation, updates, and examples, use the upstream do
 For FAQ please go to the [CKEditor Ecosystem help center](https://support.ckeditor.com/hc/en-us).
 For a high-level overview of the project see the [CKEditor Ecosystem website](https://ckeditor.com).
 
-## Release and sync model
+Release and sync model
+----------------------
 
 This repository follows a vendor-mirror release model:
 
@@ -122,21 +108,23 @@ This repository follows a vendor-mirror release model:
 
 Track upstream release notes in the [CKEditor changelog](https://github.com/ckeditor/ckeditor5/blob/stable/CHANGELOG.md) and use that information during SkyCMS review.
 
-## Editing and collaboration features
+Editing and collaboration features
+----------------------------------
 
 SkyCMS builds on CKEditor&nbsp;5 features and adds its own integration-specific behaviors. For the broader CKEditor feature set, see the upstream features catalog:
 
 Refer to the [CKEditor&nbsp;5 Features](https://ckeditor.com/docs/ckeditor5/latest/features/index.html) documentation for details.
 
-## Contributing and project organization
+Contributing and project organization
+-------------------------------------
 
-### Ideas and discussions
+Ideas and discussions:
 
 Use this repository for SkyCMS-specific editor integration work, custom plugin maintenance, and release preparation for the version deployed by SkyCMS.
 
 If you want to contribute to CKEditor core itself, use the upstream repository at [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
 
-### Development
+Development:
 
 CKEditor&nbsp;5 is a modular, multi-package, [monorepo](https://en.wikipedia.org/wiki/Monorepo) project. This repository keeps a SkyCMS-oriented downstream integration of that upstream codebase.
 
@@ -144,7 +132,7 @@ The [`ckeditor5`](https://github.com/ckeditor/ckeditor5) repository is the place
 
 For SkyCMS integration work in this repository, start with `integrations/skycms/README.md`, then use the branch and sync process documented below. If you intend to contribute to CKEditor itself, use the [official contributors' guide](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/contributing.html) and work against the upstream project.
 
-### Fork maintenance (SkyCMS)
+Fork maintenance (SkyCMS):
 
 This repository uses a SkyCMS-first branch model:
 
@@ -185,7 +173,7 @@ GitHub Actions automation:
 
 For GitHub settings, branch protection, and first-run validation, see `FORK_MAINTENANCE_CHECKLIST.md`.
 
-#### SkyCMS editor asset sync
+SkyCMS editor asset sync:
 
 To sync built CKEditor assets from this repository into the SkyCMS Editor application, use:
 
@@ -199,13 +187,14 @@ For the full SkyCMS integration workflow (including building and deploying `skyc
 
 * `integrations/skycms/README.md`
 
-### Reporting issues and feature requests
+Reporting issues and feature requests:
 
 Report SkyCMS-specific integration issues, build problems, or plugin regressions in this repository.
 
 Report CKEditor core bugs and framework feature requests in [the upstream `ckeditor5` repository](https://github.com/ckeditor/ckeditor5/issues). Read more in the [Getting support](https://ckeditor.com/docs/ckeditor5/latest/support/index.html#reporting-issues) section of the CKEditor 5 documentation.
 
-## License
+License
+-------
 
 Licensed under a dual-license model, this software is available under:
 
