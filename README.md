@@ -70,6 +70,7 @@ pnpm install
 pnpm --filter @skycms/ckeditor-integration dev
 ```
 
+CKEditor&nbsp;5 is a TypeScript project. Starting from v37.0.0, official packages provide native type definitions.
 Useful commands:
 
 * `pnpm --filter @skycms/ckeditor-integration build`
