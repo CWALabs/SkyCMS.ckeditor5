@@ -20,14 +20,11 @@ For the official CKEditor 5 project, documentation, and contribution guidelines,
 - [Quick start](#quick-start)
 	- [Repository purpose](#repository-purpose)
 	- [Branch model](#branch-model)
-	- [CKEditor 5 Builder](#ckeditor-5-builder)
-	- [TypeScript support](#typescript-support)
-	- [CKEditor 5 advanced installation](#ckeditor-5-advanced-installation)
-		- [CKEditor 5 Framework](#ckeditor-5-framework)
-- [Documentation and FAQ](#documentation-and-faq)
-- [Releases](#releases)
-- [Editing and collaboration features](#editing-and-collaboration-features)
-- [Create a free account and test full potential](#create-a-free-account-and-test-full-potential)
+	- [Maintainer quick start](#maintainer-quick-start)
+	- [SkyCMS integration workspace](#skycms-integration-workspace)
+	- [Upstream CKEditor resources](#upstream-ckeditor-resources)
+- [Documentation and support](#documentation-and-support)
+- [Release and sync model](#release-and-sync-model)
 - [Contributing and project organization](#contributing-and-project-organization)
 	- [Ideas and discussions](#ideas-and-discussions)
 	- [Development](#development)
@@ -64,75 +61,88 @@ The sync sequence is:
 
 See `FORK_MAINTENANCE_CHECKLIST.md` for the GitHub setup and first-run steps.
 
-Refer to the [Quick Start](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/quick-start.html) guide to learn more about CKEditor&nbsp;5 installation.
+### Maintainer quick start
 
-### CKEditor 5 Builder
+From the repository root:
 
-The easiest way to start using CKEditor&nbsp;5 with all the features you need is to prepare a customized setup with the [CKEditor&nbsp;5 Builder](https://ckeditor.com/ckeditor-5/builder). All you need to do is choose the preferred editor type as a base, add all the required plugins, and download the ready-to-use package.
+```powershell
+pnpm install
+pnpm --filter @skycms/ckeditor-integration dev
+```
 
-### TypeScript support
+Useful commands:
 
-CKEditor&nbsp;5 is a TypeScript project. Starting from v37.0.0, it offers native type definitions. Check out our dedicated guide to read more about [TypeScript support](https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/typescript-support.html).
+* `pnpm --filter @skycms/ckeditor-integration build`
+* `pnpm --filter @skycms/ckeditor-integration build:lib`
+* `pnpm --filter @skycms/ckeditor-integration test`
+* `pwsh ./scripts/sync-fork.ps1 -WhatIf`
 
-### CKEditor 5 advanced installation
+### SkyCMS integration workspace
 
-For more advanced users or those who need to integrate CKEditor&nbsp;5 with their applications, we prepared integrations with popular JavaScript frameworks:
-* [Angular](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/angular.html)
-* [React](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/react/react.html)
-* [Vue](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/vuejs-v3.html)
+The SkyCMS-specific code lives under `integrations/skycms/` and includes:
 
-#### CKEditor 5 Framework
+* custom plugins such as page link, file link, image insertion, SignalR hooks, and VS Code editor integration,
+* a local playground used to validate SkyCMS runtime behavior against the current CKEditor version,
+* deployment helpers that copy built assets back into the main SkyCMS repository.
 
-CKEditor&nbsp;5 is also a framework for creating custom-made rich text editing solutions.
+Start there when you need to validate or extend the SkyCMS editor behavior.
 
-To find out how to start building your editor from scratch go to the [CKEditor&nbsp;5 Framework overview](https://ckeditor.com/docs/ckeditor5/latest/framework/index.html) section of the CKEditor&nbsp;5 documentation.
+### Upstream CKEditor resources
 
-## Documentation and FAQ
+When you need official CKEditor guidance, use the upstream resources:
 
-Extensive documentation dedicated to all things CKEditor&nbsp;5-related is available. You will find basic guides that will help you kick off your project, advanced deep-dive tutorials to tailor the editor to your specific needs, and help sections with solutions and answers to any of your possible questions. To find out more refer to the following [CKEditor&nbsp;5 documentation](https://ckeditor.com/docs/ckeditor5/latest/index.html) sections:
+* [Quick Start](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/quick-start.html)
+* [TypeScript support](https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/typescript-support.html)
+* [Framework overview](https://ckeditor.com/docs/ckeditor5/latest/framework/index.html)
+* [API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/index.html)
+
+## Documentation and support
+
+For SkyCMS integration workflow details, start with `integrations/skycms/README.md` and `FORK_MAINTENANCE_CHECKLIST.md`.
+
+For CKEditor framework documentation, updates, and examples, use the upstream documentation portal:
 
 * [Installing CKEditor&nbsp;5](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/quick-start.html)
 * [CKEditor&nbsp;5 features](https://ckeditor.com/docs/ckeditor5/latest/features/index.html)
 * [CKEditor&nbsp;5 examples](https://ckeditor.com/docs/ckeditor5/latest/examples/index.html)
 * [Updating CKEditor&nbsp;5](https://ckeditor.com/docs/ckeditor5/latest/updating/index.html)
 * [Getting CKEditor&nbsp;5 support](https://ckeditor.com/docs/ckeditor5/latest/support/index.html)
-* [CKEditor&nbsp;5 Framework](https://ckeditor.com/docs/ckeditor5/latest/framework/index.html)
-* [API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/index.html)
 
 For FAQ please go to the [CKEditor Ecosystem help center](https://support.ckeditor.com/hc/en-us).
 For a high-level overview of the project see the [CKEditor Ecosystem website](https://ckeditor.com).
 
-## Releases
+## Release and sync model
 
-Follow the [CKEditor&nbsp;5 changelog](https://github.com/ckeditor/ckeditor5/blob/stable/CHANGELOG.md) for release details and check out the CKEditor&nbsp;5 release blog posts on the [CKSource blog](https://ckeditor.com/blog/?category=releases&tags=CKEditor-5) for important release highlights and additional information.
+This repository follows a vendor-mirror release model:
+
+1. Upstream CKEditor changes are mirrored into `vendor/ckeditor5`.
+2. A review PR is opened from `vendor/ckeditor5` into `skycms/main`.
+3. SkyCMS-specific validation happens on `skycms/main` before merge.
+4. Built assets are synced into the main SkyCMS Editor repository after validation.
+
+Track upstream release notes in the [CKEditor changelog](https://github.com/ckeditor/ckeditor5/blob/stable/CHANGELOG.md) and use that information during SkyCMS review.
 
 ## Editing and collaboration features
 
-The CKEditor&nbsp;5 Framework offers access to a plethora of various plugins, supporting [all kinds of editing features](https://ckeditor.com/docs/ckeditor5/latest/features/index.html).
-
-From collaborative editing support providing comments and tracking changes, through editing tools that let users control the content looks and structure such as tables, lists, and font styles, to accessibility helpers and multi-language support - CKEditor&nbsp;5 is easily extensible and customizable. Special duty features like Markdown input and output and source editing, or export to PDF and Word provide solutions for users with diverse and specialized needs. Images and videos are easily supported and CKEditor&nbsp;5 offers various upload and storage systems to manage these.
-
-The number of options and the ease of customization and adding new ones make the editing experience even better for any environment and professional background.
+SkyCMS builds on CKEditor&nbsp;5 features and adds its own integration-specific behaviors. For the broader CKEditor feature set, see the upstream features catalog:
 
 Refer to the [CKEditor&nbsp;5 Features](https://ckeditor.com/docs/ckeditor5/latest/features/index.html) documentation for details.
-
-## Create a free account and test full potential
-
-If you want to check full CKEditor&nbsp;5 capabilities, including premium features, sign up for a [free non-commitment 14-day trial](https://portal.ckeditor.com/checkout?plan=free).
 
 ## Contributing and project organization
 
 ### Ideas and discussions
 
-The development repository of CKEditor&nbsp;5 is located at [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5). This is the best place for bringing opinions and contributions. Letting the core team know if they are going in the right or wrong direction is great feedback and will be much appreciated!
+Use this repository for SkyCMS-specific editor integration work, custom plugin maintenance, and release preparation for the version deployed by SkyCMS.
+
+If you want to contribute to CKEditor core itself, use the upstream repository at [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
 
 ### Development
 
-CKEditor&nbsp;5 is a modular, multi-package, [monorepo](https://en.wikipedia.org/wiki/Monorepo) project. It consists of several packages that create the editing framework, based on which the feature packages are implemented.
+CKEditor&nbsp;5 is a modular, multi-package, [monorepo](https://en.wikipedia.org/wiki/Monorepo) project. This repository keeps a SkyCMS-oriented downstream integration of that upstream codebase.
 
 The [`ckeditor5`](https://github.com/ckeditor/ckeditor5) repository is the place that centralizes the development of CKEditor&nbsp;5. It bundles different packages into a single place, adding the necessary helper tools for the development workflow, like the builder and the test runner. [Basic information on how to set up the development environment](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/development-environment.html) can be found in the documentation.
 
-Use this repository for SkyCMS integration work. If you intend to contribute to CKEditor itself, use the [official contributors' guide](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/contributing.html) and work against the upstream project.
+For SkyCMS integration work in this repository, start with `integrations/skycms/README.md`, then use the branch and sync process documented below. If you intend to contribute to CKEditor itself, use the [official contributors' guide](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/contributing.html) and work against the upstream project.
 
 ### Fork maintenance (SkyCMS)
 
@@ -187,11 +197,13 @@ This script copies CKEditor distribution files (JS/CSS/browser/translations/lice
 
 For the full SkyCMS integration workflow (including building and deploying `skycms-plugins.js`), see:
 
-- `integrations/skycms/README.md`
+* `integrations/skycms/README.md`
 
 ### Reporting issues and feature requests
 
-Report issues in [the `ckeditor5` repository](https://github.com/ckeditor/ckeditor5/issues). Read more in the [Getting support](https://ckeditor.com/docs/ckeditor5/latest/support/index.html#reporting-issues) section of the CKEditor 5 documentation.
+Report SkyCMS-specific integration issues, build problems, or plugin regressions in this repository.
+
+Report CKEditor core bugs and framework feature requests in [the upstream `ckeditor5` repository](https://github.com/ckeditor/ckeditor5/issues). Read more in the [Getting support](https://ckeditor.com/docs/ckeditor5/latest/support/index.html#reporting-issues) section of the CKEditor 5 documentation.
 
 ## License
 
