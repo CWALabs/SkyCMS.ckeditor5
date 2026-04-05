@@ -1,5 +1,7 @@
 <button class="external-type">Start external typing</button>
 <button class="external-delete">Start external deleting</button>
+<button class="toggle-left-edge">Enable left-edge mode</button>
+<span class="left-edge-state">Left-edge mode: off</span>
 
 <div class="wrapper-outer">
 	<h3>Appreciation of diversity</h3>
@@ -76,6 +78,10 @@
 </div>
 
 <style>
+	:root {
+		--playground-left-offset: 30px;
+	}
+
 	#editor {
 		margin: 0 auto;
 		max-width: 800px;
@@ -91,7 +97,17 @@
 	.wrapper-outer {
 		position: absolute;
 		top: 200px;
-		left: 30px;
+		left: var(--playground-left-offset);
+	}
+
+	body.left-edge-mode {
+		--playground-left-offset: 2px;
+	}
+
+	body.left-edge-mode #editor {
+		max-width: 560px;
+		margin-left: 0;
+		margin-right: auto;
 	}
 
 	.ck-block-toolbar-button {
