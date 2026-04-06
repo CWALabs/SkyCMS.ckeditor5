@@ -25,11 +25,12 @@ Key paths:
 
 Current custom plugins in this package:
 
+1. `copilot`
 1. `filelink`
-2. `insertimage`
-3. `pagelink`
-4. `signalr`
-5. `vscodeeditor`
+1. `insertimage`
+1. `pagelink`
+1. `signalr`
+1. `vscodeeditor`
 
 ## Plugin Pattern Used
 
@@ -81,6 +82,17 @@ The custom buttons are intentionally host-driven. They call APIs expected on `wi
 - Playground fallback:
   - Displays a clear host-bridge-missing message.
 
+### `copilotAssist`
+
+- Toolbar item:
+  - `copilotAssist`
+- Host callback:
+  - `window.parent.openCkEditorCopilot(editor)`
+- Playground fallback:
+  - Opens the local floating AI window implemented in `playground/copilot-host.js`.
+- Important scope note:
+  - Chat sessions and apply actions are scoped to the originating editor instance.
+
 ### `signalr`
 
 - No toolbar item; event bridge plugin.
@@ -108,6 +120,7 @@ What it validates:
 2. Toolbar item rendering for custom buttons.
 3. Host callback invocation path.
 4. Local fallback behavior when host APIs are absent.
+5. Floating AI window behavior for the Copilot integration.
 
 ## Why Editing Files Are Minimal
 
@@ -144,6 +157,13 @@ If `insertImage` fails in fallback:
 1. Confirm image plugins are loaded.
 2. Confirm `insertImage` command exists.
 3. Confirm provided URL is accessible.
+
+If the AI button appears but the assistant window does not open:
+
+1. Confirm `copilotAssist` is present in the resolved toolbar profile.
+2. Confirm `window.parent.openCkEditorCopilot` exists in the real host.
+3. In the local playground, confirm `playground/copilot-host.js` is initialized from `playground/main.js`.
+4. Check the browser console for import or runtime errors in the local host layer.
 
 If SignalR events do not broadcast:
 

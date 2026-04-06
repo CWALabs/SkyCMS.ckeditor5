@@ -66,7 +66,15 @@ This checklist validates toolbar profile behavior and host bridge integration af
   - Host callback `window.parent.openVsCodeBlockEditor(editor)` is invoked.
   - If host callback is absent, fallback alert appears.
 
-### 8. SignalR event bridge
+### 8. AI assistant bridge
+
+- Open a standard or advanced editor and click `copilotAssist`.
+- Expected result:
+  - Host callback `window.parent.openCkEditorCopilot(editor)` is invoked.
+  - In local playground mode, the floating AI window opens and remains scoped to the active editor.
+  - Title mode does not expose the AI button.
+
+### 9. SignalR event bridge
 
 - Focus, blur, type, and click inside the editor.
 - Expected result:

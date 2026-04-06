@@ -24,6 +24,7 @@ export const SKYCMS_EDITOR_PROFILES = {
 			'undo', 'redo', '|',
 			'heading', '|',
 			'bold', 'italic', 'underline', '|',
+			'copilotAssist', '|',
 			'skyCmsLink', 'fileLink', '|',
 			'imageInsert', '|',
 			'bulletedList', 'numberedList', 'todoList', '|',
@@ -38,6 +39,7 @@ export const SKYCMS_EDITOR_PROFILES = {
 	advanced: {
 		toolbar: [
 			'heading', '|',
+			'copilotAssist', '|',
 			'skyCmsLink', 'imageInsert', 'resizeImage', 'imageStyle:inline',
 			'toggleImageCaption', 'mediaEmbed',
 			'insertTable', 'blockQuote', 'codeBlock', '|',
