@@ -64,6 +64,7 @@ vi.mock( 'ckeditor5', () => {
 } );
 
 import FileLinkUI from '../src/plugins/filelink/filelinkui.js';
+import CopilotUI from '../src/plugins/copilot/copilotui.js';
 import InsertImageUI from '../src/plugins/insertimage/insertimageui.js';
 import PageLinkUI from '../src/plugins/pagelink/pagelinkui.js';
 import SignalRUI from '../src/plugins/signalr/signalrui.js';
@@ -218,6 +219,23 @@ describe( 'SkyCMS plugin UI smoke tests', () => {
 
 		expect( window.parent.openInsertFileLinkModel ).toHaveBeenCalledWith( editor );
 		expect( editor.execute ).not.toHaveBeenCalled();
+	} );
+
+	it( 'registers copilotAssist and calls host bridge when available', () => {
+		const { editor, button } = initButton( CopilotUI, 'copilotAssist' );
+
+		window.parent.openCkEditorCopilot = vi.fn();
+		button.__listeners.execute();
+
+		expect( window.parent.openCkEditorCopilot ).toHaveBeenCalledWith( editor );
+	} );
+
+	it( 'registers copilotAssist and warns when host bridge is missing', () => {
+		const { button } = initButton( CopilotUI, 'copilotAssist' );
+
+		button.__listeners.execute();
+
+		expect( window.alert ).toHaveBeenCalledWith( 'No host AI assistant bridge detected.' );
 	} );
 
 	it( 'registers insertImage and runs fallback insertImage command', () => {

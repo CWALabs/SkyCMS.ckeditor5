@@ -3,6 +3,16 @@ SkyCMS CKEditor 5 Integration<!-- omit in toc -->
 
 This repository is the SkyCMS-maintained CKEditor 5 integration. It exists to keep the SkyCMS editor implementation current with upstream CKEditor fixes and features while preserving SkyCMS-specific plugins, runtime behavior, and deployment assets.
 
+SkyCMS-specific additions in this repository include:
+
+* an AI writing assistant integration for standard and advanced SkyCMS editor profiles,
+* page-link integration for linking to SkyCMS-managed website pages,
+* file-link integration for linking to files stored in SkyCMS,
+* host-aware image insertion that supports upload, website storage, and external image URLs,
+* SignalR integration hooks used by the SkyCMS editor host,
+* VS Code editor integration support,
+* title/mode indication and SkyCMS toolbar profile behavior.
+
 This is a downstream integration repository, not a contribution fork. Upstream CKEditor development still happens in the official `ckeditor/ckeditor5` repository, while this repository packages and validates the version of CKEditor used by SkyCMS.
 
 Branch intent:
@@ -32,8 +42,6 @@ For the official CKEditor 5 project, documentation, and contribution guidelines,
 	- [Reporting issues and feature requests](#reporting-issues-and-feature-requests)
 - [License](#license)
 
-## Quick start
-
 ### Repository purpose
 
 Use this repository when you need to:
@@ -45,7 +53,7 @@ Use this repository when you need to:
 
 If you want the upstream CKEditor source repository for contribution or general framework development, use [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
 
-### Branch model
+Branch model:
 
 This repository follows a vendor-mirror workflow:
 
@@ -131,13 +139,13 @@ Refer to the [CKEditor&nbsp;5 Features](https://ckeditor.com/docs/ckeditor5/late
 
 ## Contributing and project organization
 
-### Ideas and discussions
+Use this repository for SkyCMS-specific editor integration work, custom plugin maintenance, and release preparation for the version deployed by SkyCMS.
 
 Use this repository for SkyCMS-specific editor integration work, custom plugin maintenance, and release preparation for the version deployed by SkyCMS.
 
 If you want to contribute to CKEditor core itself, use the upstream repository at [https://github.com/ckeditor/ckeditor5](https://github.com/ckeditor/ckeditor5).
 
-### Development
+Development:
 
 CKEditor&nbsp;5 is a modular, multi-package, [monorepo](https://en.wikipedia.org/wiki/Monorepo) project. This repository keeps a SkyCMS-oriented downstream integration of that upstream codebase.
 
@@ -145,7 +153,7 @@ The [`ckeditor5`](https://github.com/ckeditor/ckeditor5) repository is the place
 
 For SkyCMS integration work in this repository, start with `integrations/skycms/README.md`, then use the branch and sync process documented below. If you intend to contribute to CKEditor itself, use the [official contributors' guide](https://ckeditor.com/docs/ckeditor5/latest/framework/contributing/contributing.html) and work against the upstream project.
 
-### Fork maintenance (SkyCMS)
+Fork maintenance (SkyCMS):
 
 This repository uses a SkyCMS-first branch model:
 
@@ -186,7 +194,7 @@ GitHub Actions automation:
 
 For GitHub settings, branch protection, and first-run validation, see `FORK_MAINTENANCE_CHECKLIST.md`.
 
-#### SkyCMS editor asset sync
+SkyCMS editor asset sync:
 
 To sync built CKEditor assets from this repository into the SkyCMS Editor application, use:
 
@@ -200,13 +208,14 @@ For the full SkyCMS integration workflow (including building and deploying `skyc
 
 * `integrations/skycms/README.md`
 
-### Reporting issues and feature requests
+Report SkyCMS-specific integration issues, build problems, or plugin regressions in this repository.
 
 Report SkyCMS-specific integration issues, build problems, or plugin regressions in this repository.
 
 Report CKEditor core bugs and framework feature requests in [the upstream `ckeditor5` repository](https://github.com/ckeditor/ckeditor5/issues). Read more in the [Getting support](https://ckeditor.com/docs/ckeditor5/latest/support/index.html#reporting-issues) section of the CKEditor 5 documentation.
 
-## License
+License
+-------
 
 Licensed under a dual-license model, this software is available under:
 

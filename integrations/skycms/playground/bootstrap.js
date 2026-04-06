@@ -48,6 +48,7 @@ import {
 } from 'ckeditor5';
 
 import {
+	Copilot,
 	FileLink,
 	InsertImage,
 	PageLink,
@@ -188,6 +189,7 @@ export function createPlaygroundConfig( profileName = 'simple' ) {
 			TextTransformation,
 			TodoList,
 			Underline,
+			Copilot,
 			FileLink,
 			InsertImage,
 			PageLink,
@@ -197,7 +199,8 @@ export function createPlaygroundConfig( profileName = 'simple' ) {
 		],
 		balloonToolbar: profile.balloonToolbar,
 		toolbar: {
-			items: profile.toolbar
+			items: profile.toolbar,
+			shouldNotGroupWhenFull: true
 		},
 		image: {
 			toolbar: [

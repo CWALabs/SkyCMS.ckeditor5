@@ -5,6 +5,7 @@ This package is the staging area for SkyCMS-specific CKEditor customization befo
 ## Included now
 
 - Migrated vertical slice plugin:
+  - `src/plugins/copilot/*`
   - `src/plugins/filelink/*`
   - `src/plugins/insertimage/*`
   - `src/plugins/pagelink/*`
@@ -18,6 +19,7 @@ This package is the staging area for SkyCMS-specific CKEditor customization befo
   - `MANUAL_QA_CHECKLIST.md`
 - Integration docs:
   - `COMPONENT_INTEGRATION_GUIDE.md`
+  - `AI_ASSISTANT_INTEGRATION.md`
 
 ## Run the playground
 
@@ -132,6 +134,29 @@ The current integration uses unified dropdown entry points to reduce toolbar noi
   - `From website storage`
   - `From another website`
 
+## AI assistant integration
+
+The integration workspace now includes a Copilot-style writing assistant entry point for SkyCMS editors.
+
+What it does:
+
+1. Adds a `copilotAssist` toolbar button to the `standard` and `advanced` profiles.
+2. Opens a floating assistant window that stays scoped to the active editor instance.
+3. Supports `Replace selection`, `Insert at cursor`, and `Replace block` apply flows.
+
+Why it exists:
+
+1. To validate the SkyCMS rich-text AI authoring experience before syncing built assets into the main application.
+2. To test multi-editor scoping, floating host UI behavior, and apply semantics without waiting for a full product deployment.
+
+Where to start:
+
+1. `src/plugins/copilot/`
+2. `playground/copilot-host.js`
+3. `AI_ASSISTANT_INTEGRATION.md`
+
+Typical uses include grammar cleanup, paragraph rewrites, shortening or expanding a section, and replacing an entire editor region with a more polished draft.
+
 ## Playground mode matrix
 
 The playground includes side-by-side editable surfaces to validate all core Visual Editor modes:
@@ -151,4 +176,5 @@ window.skycmsEditorProfile = 'advanced';
 
 - Validate custom plugin compatibility against the current ckeditor5 version.
 - Evolve toolbar/menu defaults in a controlled test environment.
+- Validate the SkyCMS AI writing assistant experience before syncing to the main CMS host.
 - Reduce risk before syncing final artifacts to SkyCMS Editor.
