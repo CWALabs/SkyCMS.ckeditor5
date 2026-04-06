@@ -25,10 +25,24 @@ For the official CKEditor 5 project, documentation, and contribution guidelines,
 
 ![A composition of screenshots presenting various features of CKEditor&nbsp;5 rich text editor](https://raw.githubusercontent.com/ckeditor/ckeditor5/master/docs/assets/img/CKEditor-5.png)
 
-Quick start
------------
+## Table of contents<!-- omit in toc -->
 
-Repository purpose:
+- [Quick start](#quick-start)
+	- [Repository purpose](#repository-purpose)
+	- [Branch model](#branch-model)
+	- [Maintainer quick start](#maintainer-quick-start)
+	- [SkyCMS integration workspace](#skycms-integration-workspace)
+	- [Upstream CKEditor resources](#upstream-ckeditor-resources)
+- [Documentation and support](#documentation-and-support)
+- [Release and sync model](#release-and-sync-model)
+- [Contributing and project organization](#contributing-and-project-organization)
+	- [Ideas and discussions](#ideas-and-discussions)
+	- [Development](#development)
+	- [Fork maintenance (SkyCMS)](#fork-maintenance-skycms)
+	- [Reporting issues and feature requests](#reporting-issues-and-feature-requests)
+- [License](#license)
+
+### Repository purpose
 
 Use this repository when you need to:
 
@@ -55,7 +69,7 @@ The sync sequence is:
 
 See `FORK_MAINTENANCE_CHECKLIST.md` for the GitHub setup and first-run steps.
 
-Maintainer quick start:
+### Maintainer quick start
 
 From the repository root:
 
@@ -64,6 +78,7 @@ pnpm install
 pnpm --filter @skycms/ckeditor-integration dev
 ```
 
+CKEditor&nbsp;5 is a TypeScript project. Starting from v37.0.0, official packages provide native type definitions.
 Useful commands:
 
 * `pnpm --filter @skycms/ckeditor-integration build`
@@ -71,21 +86,17 @@ Useful commands:
 * `pnpm --filter @skycms/ckeditor-integration test`
 * `pwsh ./scripts/sync-fork.ps1 -WhatIf`
 
-SkyCMS integration workspace:
+### SkyCMS integration workspace
 
 The SkyCMS-specific code lives under `integrations/skycms/` and includes:
 
-* custom authoring plugins for page linking, file linking, image insertion, SignalR integration, VS Code editor integration, and title/mode indication,
-* a Copilot-style assistant flow used to validate region-scoped rich-text AI authoring before syncing assets into the main SkyCMS application,
-* a host-aware image flow that supports CKEditor upload, SkyCMS website-storage selection, and external image URLs from one unified entry point,
-* SkyCMS-specific link and image dropdown behavior that keeps the toolbar compact while still exposing website-page, website-file, upload, and external URL flows,
-* runtime toolbar profiles and aliases used by SkyCMS to switch between title, simple, standard, and advanced editing modes,
-* a local playground used to validate SkyCMS runtime behavior, fallback prompts, and profile selection against the current CKEditor version,
-* deployment helpers that build and copy the SkyCMS integration bundle back into the main SkyCMS repository.
+* custom plugins such as page link, file link, image insertion, SignalR hooks, and VS Code editor integration,
+* a local playground used to validate SkyCMS runtime behavior against the current CKEditor version,
+* deployment helpers that copy built assets back into the main SkyCMS repository.
 
 Start there when you need to validate or extend the SkyCMS editor behavior.
 
-Upstream CKEditor resources:
+### Upstream CKEditor resources
 
 When you need official CKEditor guidance, use the upstream resources:
 
@@ -94,12 +105,9 @@ When you need official CKEditor guidance, use the upstream resources:
 * [Framework overview](https://ckeditor.com/docs/ckeditor5/latest/framework/index.html)
 * [API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/index.html)
 
-Documentation and support
--------------------------
+## Documentation and support
 
 For SkyCMS integration workflow details, start with `integrations/skycms/README.md` and `FORK_MAINTENANCE_CHECKLIST.md`.
-
-For the SkyCMS AI authoring integration specifically, start with `integrations/skycms/AI_ASSISTANT_INTEGRATION.md`.
 
 For CKEditor framework documentation, updates, and examples, use the upstream documentation portal:
 
@@ -112,8 +120,7 @@ For CKEditor framework documentation, updates, and examples, use the upstream do
 For FAQ please go to the [CKEditor Ecosystem help center](https://support.ckeditor.com/hc/en-us).
 For a high-level overview of the project see the [CKEditor Ecosystem website](https://ckeditor.com).
 
-Release and sync model
-----------------------
+## Release and sync model
 
 This repository follows a vendor-mirror release model:
 
@@ -124,17 +131,15 @@ This repository follows a vendor-mirror release model:
 
 Track upstream release notes in the [CKEditor changelog](https://github.com/ckeditor/ckeditor5/blob/stable/CHANGELOG.md) and use that information during SkyCMS review.
 
-Editing and collaboration features
-----------------------------------
+## Editing and collaboration features
 
 SkyCMS builds on CKEditor&nbsp;5 features and adds its own integration-specific behaviors. For the broader CKEditor feature set, see the upstream features catalog:
 
 Refer to the [CKEditor&nbsp;5 Features](https://ckeditor.com/docs/ckeditor5/latest/features/index.html) documentation for details.
 
-Contributing and project organization
--------------------------------------
+## Contributing and project organization
 
-Ideas and discussions:
+Use this repository for SkyCMS-specific editor integration work, custom plugin maintenance, and release preparation for the version deployed by SkyCMS.
 
 Use this repository for SkyCMS-specific editor integration work, custom plugin maintenance, and release preparation for the version deployed by SkyCMS.
 
@@ -203,7 +208,7 @@ For the full SkyCMS integration workflow (including building and deploying `skyc
 
 * `integrations/skycms/README.md`
 
-Reporting issues and feature requests:
+Report SkyCMS-specific integration issues, build problems, or plugin regressions in this repository.
 
 Report SkyCMS-specific integration issues, build problems, or plugin regressions in this repository.
 
