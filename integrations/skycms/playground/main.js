@@ -5,6 +5,8 @@
 
 import '../../../packages/ckeditor5/dist/ckeditor5.css';
 
+import { initializePlaygroundCopilotHost } from './copilot-host.js';
 import { startPlaygroundEditor } from './bootstrap.js';
 
+initializePlaygroundCopilotHost();
 startPlaygroundEditor();

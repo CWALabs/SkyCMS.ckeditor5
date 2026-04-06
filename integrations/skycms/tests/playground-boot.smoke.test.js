@@ -53,6 +53,7 @@ vi.mock( 'ckeditor5', () => {
 	};
 } );
 
+vi.mock( '../src/plugins/copilot/copilot.js', () => ( { default: class Copilot {} } ) );
 vi.mock( '../src/plugins/filelink/filelink.js', () => ( { default: class FileLink {} } ) );
 vi.mock( '../src/plugins/insertimage/insertimage.js', () => ( { default: class InsertImage {} } ) );
 vi.mock( '../src/plugins/pagelink/pagelink.js', () => ( { default: class PageLink {} } ) );
@@ -140,6 +141,12 @@ describe( 'Playground boot smoke tests', () => {
 
 		expect( profileName ).toBe( 'advanced' );
 		expect( config.toolbar.items ).toEqual( TOOLBAR_PROFILES.advanced.toolbar );
+	} );
+
+	it( 'includes the copilot button on standard and advanced toolbar profiles', () => {
+		expect( createPlaygroundConfig( 'standard' ).toolbar.items ).toContain( 'copilotAssist' );
+		expect( createPlaygroundConfig( 'advanced' ).toolbar.items ).toContain( 'copilotAssist' );
+		expect( createPlaygroundConfig( 'title' ).toolbar.items ).not.toContain( 'copilotAssist' );
 	} );
 
 	it( 'boots all configured playground editors when mode surfaces exist', async () => {

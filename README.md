@@ -5,6 +5,7 @@ This repository is the SkyCMS-maintained CKEditor 5 integration. It exists to ke
 
 SkyCMS-specific additions in this repository include:
 
+* an AI writing assistant integration for standard and advanced SkyCMS editor profiles,
 * page-link integration for linking to SkyCMS-managed website pages,
 * file-link integration for linking to files stored in SkyCMS,
 * host-aware image insertion that supports upload, website storage, and external image URLs,
@@ -75,6 +76,7 @@ SkyCMS integration workspace:
 The SkyCMS-specific code lives under `integrations/skycms/` and includes:
 
 * custom authoring plugins for page linking, file linking, image insertion, SignalR integration, VS Code editor integration, and title/mode indication,
+* a Copilot-style assistant flow used to validate region-scoped rich-text AI authoring before syncing assets into the main SkyCMS application,
 * a host-aware image flow that supports CKEditor upload, SkyCMS website-storage selection, and external image URLs from one unified entry point,
 * SkyCMS-specific link and image dropdown behavior that keeps the toolbar compact while still exposing website-page, website-file, upload, and external URL flows,
 * runtime toolbar profiles and aliases used by SkyCMS to switch between title, simple, standard, and advanced editing modes,
@@ -96,6 +98,8 @@ Documentation and support
 -------------------------
 
 For SkyCMS integration workflow details, start with `integrations/skycms/README.md` and `FORK_MAINTENANCE_CHECKLIST.md`.
+
+For the SkyCMS AI authoring integration specifically, start with `integrations/skycms/AI_ASSISTANT_INTEGRATION.md`.
 
 For CKEditor framework documentation, updates, and examples, use the upstream documentation portal:
 

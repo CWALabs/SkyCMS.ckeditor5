@@ -3,6 +3,7 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+export { default as Copilot } from './plugins/copilot/copilot.js';
 export { default as FileLink } from './plugins/filelink/filelink.js';
 export { default as InsertImage } from './plugins/insertimage/insertimage.js';
 export { default as PageLink } from './plugins/pagelink/pagelink.js';
