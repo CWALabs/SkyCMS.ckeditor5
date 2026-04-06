@@ -3,6 +3,15 @@ SkyCMS CKEditor 5 Integration<!-- omit in toc -->
 
 This repository is the SkyCMS-maintained CKEditor 5 integration. It exists to keep the SkyCMS editor implementation current with upstream CKEditor fixes and features while preserving SkyCMS-specific plugins, runtime behavior, and deployment assets.
 
+SkyCMS-specific additions in this repository include:
+
+* page-link integration for linking to SkyCMS-managed website pages,
+* file-link integration for linking to files stored in SkyCMS,
+* host-aware image insertion that supports upload, website storage, and external image URLs,
+* SignalR integration hooks used by the SkyCMS editor host,
+* VS Code editor integration support,
+* title/mode indication and SkyCMS toolbar profile behavior.
+
 This is a downstream integration repository, not a contribution fork. Upstream CKEditor development still happens in the official `ckeditor/ckeditor5` repository, while this repository packages and validates the version of CKEditor used by SkyCMS.
 
 Branch intent:
@@ -65,9 +74,12 @@ SkyCMS integration workspace:
 
 The SkyCMS-specific code lives under `integrations/skycms/` and includes:
 
-* custom plugins such as page link, file link, image insertion, SignalR hooks, and VS Code editor integration,
-* a local playground used to validate SkyCMS runtime behavior against the current CKEditor version,
-* deployment helpers that copy built assets back into the main SkyCMS repository.
+* custom authoring plugins for page linking, file linking, image insertion, SignalR integration, VS Code editor integration, and title/mode indication,
+* a host-aware image flow that supports CKEditor upload, SkyCMS website-storage selection, and external image URLs from one unified entry point,
+* SkyCMS-specific link and image dropdown behavior that keeps the toolbar compact while still exposing website-page, website-file, upload, and external URL flows,
+* runtime toolbar profiles and aliases used by SkyCMS to switch between title, simple, standard, and advanced editing modes,
+* a local playground used to validate SkyCMS runtime behavior, fallback prompts, and profile selection against the current CKEditor version,
+* deployment helpers that build and copy the SkyCMS integration bundle back into the main SkyCMS repository.
 
 Start there when you need to validate or extend the SkyCMS editor behavior.
 
