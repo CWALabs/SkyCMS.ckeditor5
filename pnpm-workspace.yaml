@@ -1,5 +1,6 @@
 packages:
   - packages/*
+  - integrations/*
 
 onlyBuiltDependencies:
   - '@ckeditor/ckeditor5-dev-tests'

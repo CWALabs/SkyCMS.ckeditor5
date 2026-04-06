@@ -40,3 +40,8 @@ scripts/memory/assets/*.css
 
 # Ignore local environment variables.
 .env
+
+# SkyCMS integration build artifacts.
+integrations/skycms/playground-dist/
+integrations/skycms/lint-report.json
+integrations/skycms/lint-report-full.json

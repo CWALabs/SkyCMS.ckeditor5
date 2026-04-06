@@ -1,0 +1,98 @@
+:root {
+    color-scheme: light;
+    --page-bg: #eef2f7;
+    --panel-bg: #ffffff;
+    --text-main: #1f2933;
+    --text-muted: #52606d;
+    --border: #d9e2ec;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    background: radial-gradient(circle at top, #f8fbff 0%, var(--page-bg) 60%);
+    color: var(--text-main);
+}
+
+.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.header p {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+}
+
+.panel,
+.notes {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.panel-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mode-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    background: #fcfdff;
+}
+
+.mode-card h2 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.mode-note {
+    margin: 6px 0 10px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.editor-surface {
+    min-height: 260px;
+}
+
+.editor-surface-small {
+    min-height: 150px;
+}
+
+.mode-card-title,
+.mode-card-advanced {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 800px) {
+    .panel-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mode-card-title,
+    .mode-card-advanced {
+        grid-column: auto;
+    }
+}
