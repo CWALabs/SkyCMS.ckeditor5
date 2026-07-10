@@ -2084,6 +2084,15 @@ describe( 'EditorWatchdog', () => {
 
 			await watchdog.destroy();
 		} );
+	} );
+
+	describe( '_detectConfigBasedCreator()', () => {
+		it( 'should detect legacy signature when first arg is an object with string values (multi-root)', async () => {
+			const watchdog = new EditorWatchdog( MultiRootEditor );
+
+			await watchdog.create( { foo: '<p>Foo</p>' }, { plugins: [ Paragraph ] } );
+
+			expect( watchdog.editor.getData( { rootName: 'foo' } ) ).toBe( '<p>Foo</p>' );
 
 			await watchdog.destroy();
 		} );

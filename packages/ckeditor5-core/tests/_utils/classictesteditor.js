@@ -9,6 +9,37 @@ import { normalizeRootsConfig, normalizeSingleRootEditorConstructorParams } from
 import { EditorUI, BoxedEditorUIView, InlineEditableUIView } from '@ckeditor/ckeditor5-ui';
 import { ElementReplacer } from '@ckeditor/ckeditor5-utils';
 import { registerAndInitializeRootConfigAttributes } from '@ckeditor/ckeditor5-core';
+import { isElement } from 'es-toolkit/compat';
+
+/**
+ * A simplified classic editor. Useful for testing features.
+ *
+ * @memberOf tests.core._utils
+ * @extends core.editor.Editor
+ */
+export class ClassicTestEditor extends ElementApiMixin( Editor ) {
+	/**
+	 * @inheritDoc
+	 */
+	constructor( sourceElementOrDataOrConfig, config ) {
+		const {
+			sourceElementOrData,
+			editorConfig
+		} = normalizeSingleRootEditorConstructorParams( sourceElementOrDataOrConfig, config );
+
+		super( editorConfig );
+
+		normalizeRootsConfig( sourceElementOrData, this.config, 'main', true );
+
+		const sourceElement = this.config.get( 'attachTo' );
+
+		if ( isElement( sourceElement ) ) {
+			this.sourceElement = sourceElement;
+		}
+
+		// Create the ("main") root element of the model tree.
+		this.model.document.createRoot( this.config.get( 'roots' ).main.modelElement );
+		registerAndInitializeRootConfigAttributes( this );
 
 		this.ui = new ClassicTestEditorUI( this, new BoxedEditorUIView( this.locale ) );
 

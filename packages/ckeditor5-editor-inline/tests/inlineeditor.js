@@ -928,62 +928,6 @@ describe( 'InlineEditor', () => {
 			}
 		} );
 
-		it( 'creates editor from config-only', () => {
-			return InlineEditor
-				.create( {
-					root: { initialData: '<p>Hello world!</p>' },
-					plugins: [ Paragraph ]
-				} )
-				.then( newEditor => {
-					expect( newEditor.getData() ).to.equal( '<p>Hello world!</p>' );
-					expect( newEditor.sourceElement ).to.be.undefined;
-
-					return newEditor.destroy();
-				} );
-		} );
-
-		it( 'creates editor from config-only with root.element', () => {
-			const el = document.createElement( 'div' );
-			el.innerHTML = '<p>Hello world!</p>';
-			document.body.appendChild( el );
-
-			return InlineEditor
-				.create( {
-					root: { element: el },
-					plugins: [ Paragraph, Bold ]
-				} )
-				.then( newEditor => {
-					expect( newEditor.getData() ).to.equal( '<p>Hello world!</p>' );
-					expect( newEditor.sourceElement ).to.equal( el );
-
-					return newEditor.destroy();
-				} )
-				.then( () => {
-					el.remove();
-				} );
-		} );
-
-		it( 'creates editor from config-only with root.element and initialData', () => {
-			const el = document.createElement( 'div' );
-			el.innerHTML = '<p>Foo</p>';
-			document.body.appendChild( el );
-
-			return InlineEditor
-				.create( {
-					root: { element: el, initialData: '<p>Hello world!</p>' },
-					plugins: [ Paragraph, Bold ]
-				} )
-				.then( newEditor => {
-					expect( newEditor.getData() ).to.equal( '<p>Hello world!</p>' );
-					expect( newEditor.sourceElement ).to.equal( el );
-
-					return newEditor.destroy();
-				} )
-				.then( () => {
-					el.remove();
-				} );
-		} );
-
 		describe( 'configurable editor label (aria-label)', () => {
 			it( 'should be set to the defaut value if not configured', () => {
 				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).toBe(

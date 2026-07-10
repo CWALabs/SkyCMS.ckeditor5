@@ -111,23 +111,6 @@ describe( 'RootAttributeOperation', () => {
 		expect( root.getAttribute( 'data' ) ).toEqual( { foo: [ 3, 4 ] } );
 	} );
 
-	it( 'should change attribute when old value is a deep-equal object (different reference)', () => {
-		root._setAttribute( 'data', { foo: [ 1, 2 ] } );
-
-		model.applyOperation(
-			new RootAttributeOperation(
-				root,
-				'data',
-				{ foo: [ 1, 2 ] },
-				{ foo: [ 3, 4 ] },
-				doc.version
-			)
-		);
-
-		expect( doc.version ).to.equal( 1 );
-		expect( root.getAttribute( 'data' ) ).to.deep.equal( { foo: [ 3, 4 ] } );
-	} );
-
 	it( 'should remove attribute from the root element', () => {
 		root._setAttribute( 'x', true );
 

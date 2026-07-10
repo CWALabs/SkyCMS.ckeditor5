@@ -19,6 +19,92 @@ import {
 	normalizeSingleRootEditorConstructorParams,
 	registerAndInitializeRootConfigAttributes,
 	verifyRootElements,
+	type EditorConfig,
+	type EditorReadyEvent,
+	type ViewRootElementDefinition,
+	type ElementApiMixinConstructor
+} from '@ckeditor/ckeditor5-core';
+
+import { isElement as _isElement } from 'es-toolkit/compat';
+
+const ClassicEditorBase: ElementApiMixinConstructor<typeof Editor> = /* #__PURE__ */ ElementApiMixin( Editor );
+
+/**
+ * The classic editor implementation. It uses an inline editable and a sticky toolbar, all enclosed in a boxed UI.
+ * See the {@glink examples/builds/classic-editor demo}.
+ *
+ * In order to create a classic editor instance, use the static
+ * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`} method.
+ */
+export class ClassicEditor extends ClassicEditorBase {
+	/**
+	 * @inheritDoc
+	 */
+	public static override get editorName(): 'ClassicEditor' {
+		return 'ClassicEditor';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public readonly ui: ClassicEditorUI;
+
+	/**
+	 * Creates an instance of the classic editor.
+	 *
+	 * **Note:** do not use the constructor to create editor instances. Use the static
+	 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`} method instead.
+	 *
+	 * @param config The editor configuration.
+	 */
+	protected constructor( config: EditorConfig );
+
+	/**
+	 * Creates an instance of the classic editor.
+	 *
+	 * **Note:** do not use the constructor to create editor instances. Use the static
+	 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`} method instead.
+	 *
+	 * **Note**: This constructor signature is deprecated and will be removed in the future release.
+	 *
+	 * @deprecated
+	 * @param sourceElementOrData The DOM element that will be the source for the created editor
+	 * or the editor's initial data. For more information see
+	 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`}.
+	 * @param config The editor configuration.
+	 */
+	protected constructor( sourceElementOrData: HTMLElement | string, config: EditorConfig );
+
+	protected constructor( sourceElementOrDataOrConfig: HTMLElement | string | EditorConfig, config: EditorConfig = {} ) {
+		const {
+			sourceElementOrData,
+			editorConfig
+		} = normalizeSingleRootEditorConstructorParams( sourceElementOrDataOrConfig, config );
+
+		super( editorConfig );
+
+		normalizeRootsConfig( sourceElementOrData, this.config, 'main', true );
+
+		// From this point use only normalized `roots.main.element`.
+		const sourceElement = this.config.get( 'attachTo' );
+
+		this.config.define( 'menuBar.isVisible', false );
+
+		if ( isElement( sourceElement ) ) {
+			if ( !sourceElement.isConnected ) {
+				/**
+				 * Cannot initialize the editor because the provided source element is not attached to the DOM and cannot be replaced.
+				 *
+				 * @error editor-source-element-not-attached
+				 */
+				throw new CKEditorError( 'editor-source-element-not-attached', null );
+			}
+
+			this.sourceElement = sourceElement;
+		}
+
+		this.model.document.createRoot( this.config.get( 'roots' )!.main.modelElement );
+		registerAndInitializeRootConfigAttributes( this );
 
 		const shouldToolbarGroupWhenFull = !this.config.get( 'toolbar.shouldNotGroupWhenFull' );
 

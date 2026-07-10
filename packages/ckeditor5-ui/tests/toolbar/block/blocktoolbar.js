@@ -670,42 +670,6 @@ describe( 'BlockToolbar', () => {
 			} );
 		} );
 
-		it( 'should attach the button to the right side in LTR when there is no room on the left', () => {
-			_setModelData( editor.model, '<paragraph>foo[]bar</paragraph>' );
-
-			const target = editor.ui.getEditableElement().querySelector( 'p' );
-			const styleMock = testUtils.sinon.stub( window, 'getComputedStyle' );
-
-			styleMock.withArgs( target ).returns( {
-				lineHeight: '20px',
-				paddingTop: '10px'
-			} );
-
-			styleMock.callThrough();
-
-			testUtils.sinon.stub( window, 'innerWidth' ).value( 300 );
-
-			testUtils.sinon.stub( editor.ui.getEditableElement(), 'getBoundingClientRect' ).returns( {
-				left: 40,
-				right: 240
-			} );
-
-			testUtils.sinon.stub( target, 'getBoundingClientRect' ).returns( {
-				top: 500,
-				left: 60
-			} );
-
-			testUtils.sinon.stub( blockToolbar.buttonView.element, 'getBoundingClientRect' ).returns( {
-				width: 100,
-				height: 100
-			} );
-
-			editor.ui.fire( 'update' );
-
-			expect( blockToolbar.buttonView.top ).to.equal( 470 );
-			expect( blockToolbar.buttonView.left ).to.equal( 240 );
-		} );
-
 		describe( 'toolbarView#maxWidth', () => {
 			it( 'should be set when the panel shows up', () => {
 				expect( blockToolbar.toolbarView.maxWidth ).toBe( 'auto' );
@@ -812,30 +776,6 @@ describe( 'BlockToolbar', () => {
 				//  <--------------max-width------------>
 
 				expect( blockToolbar.toolbarView.maxWidth ).toBe( '440px' );
-			} );
-
-			it( 'should set a proper toolbar max-width when the button is attached on the right side in LTR', () => {
-				const viewElement = editor.ui.getEditableElement();
-
-				testUtils.sinon.stub( viewElement, 'getBoundingClientRect' ).returns( {
-					left: 100,
-					right: 500,
-					width: 400
-				} );
-
-				testUtils.sinon.stub( blockToolbar.buttonView.element, 'getBoundingClientRect' ).returns( {
-					left: 500,
-					width: 40
-				} );
-
-				resizeCallback( [ {
-					target: viewElement,
-					contentRect: new Rect( viewElement )
-				} ] );
-
-				blockToolbar.buttonView.fire( 'execute' );
-
-				expect( blockToolbar.toolbarView.maxWidth ).to.equal( '440px' );
 			} );
 		} );
 

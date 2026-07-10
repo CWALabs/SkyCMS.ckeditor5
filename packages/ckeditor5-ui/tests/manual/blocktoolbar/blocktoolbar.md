@@ -5,9 +5,6 @@ _To make sure that the toolbar button appears next to selected block element (se
 1. Check if the button appears next to all block elements except the image (no toolbar item available).
 2. Change the format of one of the block elements, panel attached to button should hide after that.
 3. Put the selection in the one of the last blocks, click the button to display the panel then start resizing the browser window and observe if the button and panel are properly repositioned.
-4. Click `Enable left-edge mode` and place the selection inside any paragraph.
-5. Check if the block toolbar button stays visible and, when there is not enough room on the left, appears on the right side of the editable.
-6. Click `Disable left-edge mode` and verify the default placement is restored.
 
 ### External changes
 
