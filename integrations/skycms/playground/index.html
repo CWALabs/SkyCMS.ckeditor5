@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SkyCMS CKEditor Playground</title>
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+    <main class="page">
+        <header class="header">
+            <h1>SkyCMS CKEditor Playground</h1>
+            <p>Visual Editor mode matrix for custom SkyCMS plugins.</p>
+        </header>
+
+        <section class="panel panel-grid">
+            <article class="mode-card mode-card-title">
+                <h2>Title Mode</h2>
+                <p class="mode-note">Explicit <code>title</code> profile.</p>
+                <div
+                    id="editor-title"
+                    class="editor-surface"
+                    data-playground-editor="title"
+                    data-editor-config="title"
+                >
+                    <h2>Landing Page Hero Title</h2>
+                </div>
+            </article>
+
+            <article class="mode-card mode-card-small">
+                <h2>Standard Mode (Auto)</h2>
+                <p class="mode-note">Small area, no explicit profile. Should infer <code>standard</code>.</p>
+                <div
+                    id="editor-standard-auto"
+                    class="editor-surface editor-surface-small"
+                    data-playground-editor="standard-auto"
+                >
+                    <p>This compact editor should auto-select the standard toolbar.</p>
+                </div>
+            </article>
+
+            <article class="mode-card mode-card-small">
+                <h2>Simple Mode (Explicit)</h2>
+                <p class="mode-note">Explicit <code>simple</code> profile.</p>
+                <div
+                    id="editor-simple"
+                    class="editor-surface editor-surface-small"
+                    data-playground-editor="simple"
+                    data-editor-config="simple"
+                >
+                    <p>Simple mode focuses on lightweight text authoring.</p>
+                </div>
+            </article>
+
+            <article class="mode-card mode-card-advanced">
+                <h2>Advanced Mode (Explicit)</h2>
+                <p class="mode-note">Explicit <code>ckeditor</code> profile.</p>
+                <div
+                    id="editor-advanced"
+                    class="editor-surface"
+                    data-playground-editor="advanced"
+                    data-editor-config="ckeditor"
+                >
+                    <p>Select text and use <strong>Insert link</strong>, <strong>Insert image</strong>, and advanced formatting tools.</p>
+                    <p>This area is intentionally larger to reflect richer editing scenarios.</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="notes">
+            <h2>Modes Available</h2>
+            <ul>
+                <li><strong>title</strong>: heading-only style editing surface</li>
+                <li><strong>simple</strong>: basic rich-text controls</li>
+                <li><strong>standard</strong>: default CMS authoring controls</li>
+                <li><strong>advanced</strong>: full feature-rich editing toolbar</li>
+            </ul>
+            <p>Note: <code>skycms</code>, <code>richtext</code>, and <code>default</code> map to the advanced profile alias.</p>
+        </section>
+
+        <section class="notes">
+            <h2>Current Slice</h2>
+            <ul>
+                <li>Custom plugins: copilotAssist, pageLink, fileLink, insertImage, vsCodeEditor, signalr</li>
+                <li>Unified dropdowns: link sources + image sources</li>
+                <li>Fallback prompts and a local AI window when SkyCMS host APIs are unavailable</li>
+            </ul>
+        </section>
+    </main>
+
+    <aside id="copilotPanel" class="copilot-panel" hidden>
+        <div class="copilot-panel-header">
+            <div>
+                <div class="copilot-panel-title">AI Writing Assistant</div>
+                <div id="copilotPanelSubtitle" class="copilot-panel-subtitle">Scoped to the active editor.</div>
+            </div>
+            <div class="copilot-panel-window-actions">
+                <button id="copilotPanelMinimize" type="button">_</button>
+                <button id="copilotPanelClose" type="button">Close</button>
+            </div>
+        </div>
+
+        <div class="copilot-panel-body">
+            <div class="copilot-panel-quick-actions">
+                <button type="button" data-playground-copilot-action="improve-selection">Improve selection</button>
+                <button type="button" data-playground-copilot-action="rewrite-selection">Rewrite</button>
+                <button type="button" data-playground-copilot-action="shorten-selection">Shorten</button>
+                <button type="button" data-playground-copilot-action="expand-selection">Expand</button>
+                <button type="button" data-playground-copilot-action="replace-block">Replace block</button>
+            </div>
+
+            <div id="copilotPanelMessages" class="copilot-panel-messages"></div>
+            <div id="copilotPanelStatus" class="copilot-panel-status" hidden></div>
+
+            <form id="copilotPanelForm" class="copilot-panel-form">
+                <textarea id="copilotPanelInput" rows="4" placeholder="Ask the assistant to rewrite or improve the current region."></textarea>
+                <div class="copilot-panel-footer">
+                    <span>Enter sends. Shift+Enter adds a new line.</span>
+                    <div class="copilot-panel-footer-actions">
+                        <button id="copilotPanelClear" type="button">Clear</button>
+                        <button type="submit">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </aside>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

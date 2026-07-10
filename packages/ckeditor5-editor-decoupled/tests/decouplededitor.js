@@ -1034,6 +1034,62 @@ describe( 'DecoupledEditor', () => {
 				} );
 		} );
 
+		it( 'creates editor from config-only', () => {
+			return DecoupledEditor
+				.create( {
+					root: { initialData: '<p>Hello world!</p>' },
+					plugins: [ Paragraph ]
+				} )
+				.then( newEditor => {
+					expect( newEditor.getData() ).to.equal( '<p>Hello world!</p>' );
+					expect( newEditor.sourceElement ).to.be.undefined;
+
+					return newEditor.destroy();
+				} );
+		} );
+
+		it( 'creates editor from config-only with root.element', () => {
+			const el = document.createElement( 'div' );
+			el.innerHTML = '<p>Hello world!</p>';
+			document.body.appendChild( el );
+
+			return DecoupledEditor
+				.create( {
+					root: { element: el },
+					plugins: [ Paragraph, Bold ]
+				} )
+				.then( newEditor => {
+					expect( newEditor.getData() ).to.equal( '<p>Hello world!</p>' );
+					expect( newEditor.sourceElement ).to.equal( el );
+
+					return newEditor.destroy();
+				} )
+				.then( () => {
+					el.remove();
+				} );
+		} );
+
+		it( 'creates editor from config-only with root.element and initialData', () => {
+			const el = document.createElement( 'div' );
+			el.innerHTML = '<p>Foo</p>';
+			document.body.appendChild( el );
+
+			return DecoupledEditor
+				.create( {
+					root: { element: el, initialData: '<p>Hello world!</p>' },
+					plugins: [ Paragraph, Bold ]
+				} )
+				.then( newEditor => {
+					expect( newEditor.getData() ).to.equal( '<p>Hello world!</p>' );
+					expect( newEditor.sourceElement ).to.equal( el );
+
+					return newEditor.destroy();
+				} )
+				.then( () => {
+					el.remove();
+				} );
+		} );
+
 		function test( getElementOrData ) {
 			it( 'creates an instance which inherits from the DecoupledEditor', () => {
 				return DecoupledEditor

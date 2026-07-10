@@ -342,6 +342,72 @@ describe( 'MentionEditing', () => {
 			} );
 		} );
 
+		it( 'should upcast legacy content without data-mention-uid and generate uid', () => {
+			editor.setData( '<p>foo <span class="mention" data-mention="@John">@John</span> bar</p>' );
+
+			const textNode = doc.getRoot().getChild( 0 ).getChild( 1 );
+
+			expect( textNode ).to.not.be.null;
+			expect( textNode.hasAttribute( 'mention' ) ).to.be.true;
+			expect( textNode.getAttribute( 'mention' ) ).to.have.property( 'id', '@John' );
+			expect( textNode.getAttribute( 'mention' ) ).to.have.property( '_text', '@John' );
+			expect( textNode.getAttribute( 'mention' ) ).to.have.property( 'uid' );
+			expect( textNode.getAttribute( 'mention' ).uid ).to.be.a( 'string' );
+			expect( textNode.getAttribute( 'mention' ).uid ).to.not.equal( '' );
+		} );
+
+		it( 'should preserve data-mention-uid from HTML during upcast', () => {
+			editor.setData( '<p>foo <span class="mention" data-mention="@John" data-mention-uid="custom-uid">@John</span> bar</p>' );
+
+			const textNode = doc.getRoot().getChild( 0 ).getChild( 1 );
+
+			expect( textNode.getAttribute( 'mention' ) ).to.have.property( 'uid', 'custom-uid' );
+		} );
+
+		it( 'should produce identical model when upcasting the same HTML twice', () => {
+			const html = '<p>foo <span class="mention" data-mention="@John" data-mention-uid="u1">@John</span> bar</p>';
+
+			editor.setData( html );
+
+			const uid1 = doc.getRoot().getChild( 0 ).getChild( 1 ).getAttribute( 'mention' ).uid;
+
+			editor.setData( html );
+
+			const uid2 = doc.getRoot().getChild( 0 ).getChild( 1 ).getAttribute( 'mention' ).uid;
+
+			expect( uid1 ).to.equal( uid2 );
+			expect( uid1 ).to.equal( 'u1' );
+		} );
+
+		it( 'should not include data-mention-uid in clipboard output', done => {
+			editor.setData( '<p><span class="mention" data-mention="@John" data-mention-uid="u1">@John</span></p>' );
+
+			model.change( writer => {
+				writer.setSelection(
+					writer.createRange(
+						writer.createPositionAt( doc.getRoot().getChild( 0 ), 0 ),
+						writer.createPositionAt( doc.getRoot().getChild( 0 ), 5 )
+					)
+				);
+			} );
+
+			const dataTransferMock = createDataTransfer();
+
+			editor.editing.view.document.on( 'clipboardOutput', ( evt, data ) => {
+				const html = _stringifyView( data.content );
+
+				expect( html ).to.not.include( 'data-mention-uid' );
+				expect( html ).to.include( 'data-mention' );
+
+				done();
+			} );
+
+			editor.editing.view.document.fire( 'copy', {
+				dataTransfer: dataTransferMock,
+				preventDefault: sinon.spy()
+			} );
+		} );
+
 		// https://github.com/ckeditor/ckeditor5/issues/8370
 		it( 'should pass down only relevant attributes', () => {
 			editor.setData( '<p>foo<span class="mention" data-mention="@John" data-mention-uid="u1">John</span></p>' );

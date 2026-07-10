@@ -15,18 +15,6 @@ export class Declaration {
 		internal,
 		explicitInternal = false,
 		ambient = false,
-		fileName,
-		lineNumber,
-		baseClasses = [],
-		mixinBaseHelperCandidate = false
-	} ) {
-		this.localName = localName;
-		this.type = type;
-		this.references = []; // At start it is populated with names as string, later replaced with declarations while resolving.
-
-		this.internal = internal;
-		this.explicitInternal = explicitInternal;
-		this.ambient = ambient;
 
 		this.fileName = fileName;
 		this.lineNumber = lineNumber;

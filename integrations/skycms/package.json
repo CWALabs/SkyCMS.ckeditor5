@@ -1,0 +1,24 @@
+{
+  "name": "@skycms/ckeditor-integration",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SkyCMS CKEditor integration playground and custom plugins.",
+  "scripts": {
+    "dev": "vite --config vite.config.mjs",
+    "build": "vite build --config vite.config.mjs",
+    "build:lib": "vite build --config vite.lib.config.mjs",
+    "deploy:skycms": "node scripts/deploy-skycms.mjs",
+    "preview": "vite preview --config vite.config.mjs",
+    "test": "vitest run --config vitest.config.mjs",
+    "lint": "eslint src tests playground --ext .js --ignore-pattern playground-dist/** --no-warn-ignored",
+    "lint:fix": "eslint src tests playground --ext .js --ignore-pattern playground-dist/** --no-warn-ignored --fix"
+  },
+  "dependencies": {
+    "ckeditor5": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^7.3.5",
+    "vitest": "^2.1.8"
+  }
+}

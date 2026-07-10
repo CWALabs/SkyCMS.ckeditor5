@@ -512,13 +512,43 @@ export class BlockToolbar extends Plugin {
 
 		const buttonRect = new Rect( buttonElement );
 		const contentRect = new Rect( targetElement );
+		const viewportWidth = global.window.innerWidth || global.document.documentElement.clientWidth;
+		const editableRight = Number.isFinite( editableRect.right ) ? editableRect.right : editableRect.left + editableRect.width;
 
 		let positionLeft;
 
 		if ( this.editor.locale.uiLanguageDirection === 'ltr' ) {
-			positionLeft = editableRect.left - buttonRect.width;
+			const leftSidePosition = editableRect.left - buttonRect.width;
+			const rightSidePosition = editableRight;
+
+			positionLeft = leftSidePosition;
+
+			if ( leftSidePosition < 0 ) {
+				if ( !viewportWidth ) {
+					positionLeft = rightSidePosition;
+				} else {
+					const leftOverflow = Math.max( 0, -leftSidePosition );
+					const rightOverflow = Math.max( 0, rightSidePosition + buttonRect.width - viewportWidth );
+
+					if ( rightOverflow < leftOverflow ) {
+						positionLeft = rightSidePosition;
+					}
+				}
+			}
 		} else {
-			positionLeft = editableRect.right;
+			const rightSidePosition = editableRight;
+			const leftSidePosition = editableRect.left - buttonRect.width;
+
+			positionLeft = rightSidePosition;
+
+			if ( viewportWidth && rightSidePosition + buttonRect.width > viewportWidth ) {
+				const rightOverflow = Math.max( 0, rightSidePosition + buttonRect.width - viewportWidth );
+				const leftOverflow = Math.max( 0, -leftSidePosition );
+
+				if ( leftOverflow < rightOverflow ) {
+					positionLeft = leftSidePosition;
+				}
+			}
 		}
 
 		const positionTop = contentRect.top + contentPaddingTop + ( contentLineHeight - buttonRect.height ) / 2;
@@ -631,9 +661,13 @@ export class BlockToolbar extends Plugin {
 	private _getToolbarMaxWidth( editableElement: HTMLElement ) {
 		const editableRect = new Rect( editableElement );
 		const buttonRect = new Rect( this.buttonView.element! );
-		const isRTL = this.editor.locale.uiLanguageDirection === 'rtl';
-		const offset = isRTL ? ( buttonRect.left - editableRect.right ) + buttonRect.width : editableRect.left - buttonRect.left;
+		const editableRight = Number.isFinite( editableRect.right ) ? editableRect.right : editableRect.left + editableRect.width;
+		const editableLeft = Number.isFinite( editableRect.left ) ? editableRect.left : editableRight - editableRect.width;
+		const buttonRight = Number.isFinite( buttonRect.right ) ? buttonRect.right : buttonRect.left + buttonRect.width;
+		const buttonLeft = Number.isFinite( buttonRect.left ) ? buttonRect.left : buttonRight - buttonRect.width;
+		const leftBoundary = Math.min( editableLeft, buttonLeft );
+		const rightBoundary = Math.max( editableRight, buttonRight );
 
-		return toPx( editableRect.width + offset );
+		return toPx( rightBoundary - leftBoundary );
 	}
 }

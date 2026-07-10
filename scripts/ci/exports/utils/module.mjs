@@ -459,6 +459,56 @@ export class Module {
 		} );
 	}
 
+	_collectClassRequiresReferences( classPath, declaration, typeParameters ) {
+		for ( const memberPath of classPath.get( 'body.body' ) ) {
+			if ( !memberPath.node.static || !isRequiresClassMember( memberPath.node ) ) {
+				continue;
+			}
+
+			if ( memberPath.isClassMethod() ) {
+				if ( memberPath.node.kind !== 'get' ) {
+					continue;
+				}
+
+				this._collectReferencedIdentifiers( {
+					path: memberPath.get( 'body' ),
+					declaration,
+					typeParameters,
+					localScope: memberPath.scope
+				} );
+			}
+
+			if ( memberPath.isClassProperty() && memberPath.get( 'value' ).node ) {
+				this._collectReferencedIdentifiers( {
+					path: memberPath.get( 'value' ),
+					declaration,
+					typeParameters,
+					localScope: memberPath.scope
+				} );
+			}
+		}
+	}
+
+	_collectReferencedIdentifiers( { path, declaration, typeParameters, localScope } ) {
+		path.traverse( {
+			Identifier: identifierPath => {
+				if ( !identifierPath.isReferencedIdentifier() ) {
+					return;
+				}
+
+				const identifierName = identifierPath.node.name;
+				const binding = identifierPath.scope.getBinding( identifierName );
+
+				// Ignore globals and names scoped inside the current class member.
+				if ( !binding || binding.scope === localScope ) {
+					return;
+				}
+
+				declaration.addReference( identifierName, typeParameters );
+			}
+		} );
+	}
+
 	_isFromPublicPackages( fileName ) {
 		// Checking if the file belongs to the public package.
 		return PUBLIC_PACKAGES.some( publicPackagePath => fileName.startsWith( publicPackagePath ) );

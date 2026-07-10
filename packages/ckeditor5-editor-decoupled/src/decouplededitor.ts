@@ -15,11 +15,6 @@ import {
 	normalizeSingleRootEditorConstructorParams,
 	registerAndInitializeRootConfigAttributes,
 	verifyRootElements,
-	type EditorConfig,
-	type EditorReadyEvent,
-	type ViewRootElementDefinition,
-	type ElementApiMixinConstructor
-} from '@ckeditor/ckeditor5-core';
 
 import { DecoupledEditorUI } from './decouplededitorui.js';
 import { DecoupledEditorUIView } from './decouplededitoruiview.js';

@@ -119,34 +119,6 @@ export class MultiRootEditor extends Editor {
 		normalizeRootsConfig( sourceElementsOrData, this.config, false );
 		normalizeRootsAttributesConfig( this.config );
 		normalizeRootEditableOptionsConfig( this.config );
-
-		if ( this.config.get( 'lazyRoots' ) ) {
-			/**
-			 * Using deprecated `config.lazyRoots` configuration option.
-			 * Use `config.roots.<rootName>.lazyLoad` instead.
-			 *
-			 * @error multi-root-editor-root-deprecated-config-lazy-roots
-			 */
-			throw new CKEditorError( 'multi-root-editor-root-deprecated-config-lazy-roots', null );
-		}
-
-		// From this point use only normalized `roots.<rootName>.element`, etc.
-		const rootsConfig = Object.entries( this.config.get( 'roots' )! );
-
-		this.sourceElements = {};
-
-		const editableElements: Record<string, HTMLElement | ViewRootElementDefinition> = {};
-
-		for ( const [ rootName, rootConfig ] of rootsConfig ) {
-			const editableElement = getRootEditableElement( rootConfig );
-
-			if ( !editableElement ) {
-				continue;
-			}
-
-			if ( isElement( editableElement ) ) {
-				this.sourceElements[ rootName ] = editableElement;
-				secureSourceElement( this, editableElement );
 			}
 
 			editableElements[ rootName ] = editableElement;
@@ -181,7 +153,6 @@ export class MultiRootEditor extends Editor {
 			if ( rootConfig.lazyLoad ) {
 				root._isLoaded = false;
 			}
-		}
 
 		// Register `$rootEditableOptions` unconditionally, so it is always returned by `getRootAttributes()` (e.g. for RH).
 		// The value is set via `config.roots.<rootName>.modelAttributes.$rootEditableOptions` (see `normalizeRootEditableOptionsConfig`),
@@ -500,6 +471,14 @@ export class MultiRootEditor extends Editor {
 				this.registerRootAttribute( key );
 				writer.setAttribute( key, modelAttributes[ key ], root );
 			}
+
+			// Storing editable options as a root attribute to make them available on other RTC clients.
+			const rootEditableOptions: RootEditableOptions = {
+				...options.placeholder && { placeholder: options.placeholder },
+				...options.label && { label: options.label }
+			};
+
+			writer.setAttribute( '$rootEditableOptions', rootEditableOptions, root );
 		};
 
 		if ( options.isUndoable ) {
@@ -613,29 +592,6 @@ export class MultiRootEditor extends Editor {
 	public createEditable( root: ModelRootElement, optionsOrPlaceholder?: RootEditableOptions | string, label?: string ): HTMLElement {
 		let placeholder: string | undefined;
 		let element: string | ViewRootElementDefinition | HTMLElement | undefined;
-
-		if ( !optionsOrPlaceholder || typeof optionsOrPlaceholder === 'string' ) {
-			placeholder = optionsOrPlaceholder;
-		} else {
-			placeholder = optionsOrPlaceholder?.placeholder;
-			label = optionsOrPlaceholder?.label;
-			element = optionsOrPlaceholder?.element;
-		}
-
-		const rootEditableConfig: RootEditableOptions = root.getAttribute( '$rootEditableOptions' ) || {};
-		// Both the call-site `element` and the stored `rootEditableConfig.element` may be a tag name string
-		// or an `HTMLElement` and need normalization - `setRootEditableOptions()` does this at write time, but
-		// callers can also pre-supply `$rootEditableOptions` directly without going through it.
-		const editableElement: HTMLElement | ViewRootElementDefinition | undefined =
-			normalizeViewRootElementDefinition( element || rootEditableConfig.element );
-
-		const editable = this.ui.view.createEditable(
-			root.rootName,
-			editableElement,
-			label || rootEditableConfig.label
-		);
-
-		editable.isInlineRoot = !rootAcceptsBlocks( this, root.rootName );
 
 		this.ui.addEditable( editable, placeholder || rootEditableConfig.placeholder );
 
@@ -1324,112 +1280,6 @@ function setRootEditableOptions(
 		...label && { label },
 		...storageElement && { element: storageElement }
 	} satisfies RootEditableOptions;
-}
-
-function isElement( value: any ): value is Element {
-	return _isElement( value );
-}
-
-/**
- * Returns the canonical editable element descriptor for the given root config.
- *
- * Falls back to `$rootEditableOptions.element` so remote RTC clients - which do not see the originator's
- * `config.roots.<name>.element` - can recreate the configured editable shape from the model attributes
- * they receive. The result is normalized here in case the attribute was pre-supplied without going
- * through `setRootEditableOptions()` (e.g. a caller writing `modelAttributes.$rootEditableOptions` directly).
- */
-function getRootEditableElement( rootConfig: RootConfig ): HTMLElement | ViewRootElementDefinition | undefined {
-	const rootEditableOptions = rootConfig.modelAttributes?.$rootEditableOptions as RootEditableOptions | undefined;
-
-	return normalizeViewRootElementDefinition( rootConfig.element || rootEditableOptions?.element );
-}
-
-/**
- * Fired whenever a root is {@link ~MultiRootEditor#addRoot added or re-added} to the editor model.
- *
- * Use this event to {@link ~MultiRootEditor#createEditable create a DOM editable} for the added root and append the DOM element
- * in a desired place in your application.
- *
- * The event is fired after all changes from a given batch are applied. The event is not fired, if the root was added and detached
- * in the same batch.
- *
- * @eventName ~MultiRootEditor#addRoot
- * @param root The root that was added.
- */
-export type AddRootEvent = {
-	name: 'addRoot';
-	args: [ root: ModelRootElement ];
-};
-
-/**
- * Fired whenever a root is {@link ~MultiRootEditor#detachRoot detached} from the editor model.
- *
- * Use this event to {@link ~MultiRootEditor#detachEditable destroy a DOM editable} for the detached root and remove the DOM element
- * from your application.
- *
- * The event is fired after all changes from a given batch are applied. The event is not fired, if the root was detached and re-added
- * in the same batch.
- *
- * @eventName ~MultiRootEditor#detachRoot
- * @param root The root that was detached.
- */
-export type DetachRootEvent = {
-	name: 'detachRoot';
-	args: [ root: ModelRootElement ];
-};
-
-/**
- * Event fired when {@link ~MultiRootEditor#loadRoot} method is called.
- *
- * The {@link ~MultiRootEditor#loadRoot default action of that method} is implemented as a
- * listener to this event, so it can be fully customized by the features.
- *
- * @eventName ~MultiRootEditor#loadRoot
- * @param args The arguments passed to the original method.
- */
-export type LoadRootEvent = DecoratedMethodEvent<MultiRootEditor, 'loadRoot'>;
-
-/**
- * Additional options available when adding a root.
- *
- * @deprecated
- */
-export type AddRootOptions = {
-
-	/**
-	 * Initial data for the root.
-	 */
-	data?: string;
-
-	/**
-	 * Initial attributes for the root.
-	 */
-	attributes?: EditorRootAttributes;
-
-	/**
-	 * Element name for the root element in the model. It can be used to set different schema rules for different roots.
-	 */
-	elementName?: string;
-
-	/**
-	 * Whether creating the root can be undone (using the undo feature) or not.
-	 */
-	isUndoable?: boolean;
-};
-
-/**
- * Declares an additional options available when adding a root.
- */
-export interface AddRootRootConfig extends RootConfig {
-
-	/**
-	 * A description of the editable root element to create. May be a tag name string (e.g. `'h1'`) or a
-	 * {@link module:core/editor/editorconfig~ViewRootElementDefinition} object.
-	 *
-	 * Passing an existing DOM element is not supported - `addRoot()` only registers the model root;
-	 * the DOM editable is created later by {@link ~MultiRootEditor#createEditable:OPTIONS `createEditable()`}.
-	 */
-	element?: string | ViewRootElementDefinition;
 
 	/**
 	 * Whether creating the root can be undone (using the undo feature) or not.

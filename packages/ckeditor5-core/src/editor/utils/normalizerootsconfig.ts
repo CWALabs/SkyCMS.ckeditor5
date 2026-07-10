@@ -71,53 +71,6 @@ export function normalizeRootsConfig(
 		throw new CKEditorError( 'editor-create-roots-not-plain-object', null );
 	}
 
-	// Avoid mixing `config.root` and `config.roots.main`.
-	if ( mainRootConfig ) {
-		if ( !defaultRootName ) {
-			/**
-			 * The {@link module:core/editor/editorconfig~EditorConfig#root `config.root`} option is designed
-			 * for single-root editors and cannot be used with the
-			 * {@link module:editor-multi-root/multirooteditor~MultiRootEditor multi-root editor}.
-			 *
-			 * To configure a multi-root editor, define each root individually using
-			 * {@link module:core/editor/editorconfig~EditorConfig#roots `config.roots`}:
-			 *
-			 * ```ts
-			 * MultiRootEditor.create( {
-			 * 	roots: {
-			 * 		header: { initialData: '<p>Header</p>' },
-			 * 		content: { initialData: '<p>Content</p>' }
-			 * 	}
-			 * } );
-			 * ```
-			 *
-			 * @error editor-create-multi-root-with-main
-			 */
-			throw new CKEditorError( 'editor-create-multi-root-with-main', null );
-		}
-		else if ( defaultRootName in rootsConfig ) {
-			/**
-			 * Both {@link module:core/editor/editorconfig~EditorConfig#root `config.root`} and
-			 * `config.roots.main` are set, but they both configure the same default editing root,
-			 * which creates an ambiguity. Use one or the other:
-			 *
-			 * * {@link module:core/editor/editorconfig~EditorConfig#root `config.root`} for a single-root editor.
-			 * * {@link module:core/editor/editorconfig~EditorConfig#roots `config.roots`} when defining
-			 * multiple roots.
-			 *
-			 * @error editor-create-roots-with-main
-			 */
-			throw new CKEditorError( 'editor-create-roots-with-main', null );
-		}
-	}
-
-	// Move `config.root` to `config.roots.main`.
-	// This makes access to root configuration more consistent as all roots will be defined in `config.roots`.
-	if ( defaultRootName && !rootsConfig[ defaultRootName ] ) {
-		rootsConfig[ defaultRootName ] = mainRootConfig || Object.create( null );
-	}
-
-	const sourceElementIsPlainObject = isSourceElementsOrDataRecord( sourceElementsOrData );
 
 	// Collect legacy configuration values for `initialData`, `placeholder`, and `label` from the config.
 	const legacyInitialData = getLegacyInitialData( config, sourceElementIsPlainObject, defaultRootName );
@@ -178,19 +131,6 @@ export function normalizeRootsConfig(
 
 			// Drop the unsupported DOM element so downstream code can read a normalized value without re-checking.
 			rootConfig.element = undefined;
-		}
-
-		// No dedicated initial data for the root.
-		if ( rootConfig.initialData === undefined ) {
-			// No legacy initial data for the root, either.
-			if ( legacyInitialData[ rootName ] === undefined ) {
-				// Use source element data or data itself as a string.
-				// Fall back to legacy sourceElement, `rootConfig.element` (only when it is an HTMLElement)
-				// or `config.attachTo` (for ClassicEditor) for data extraction.
-				const rootConfigElement = isElement( rootConfig.element ) ? rootConfig.element : undefined;
-
-				rootConfig.initialData = getInitialData(
-					sourceElementOrDataForRoot || rootConfigElement || ( separateAttachTo && config.get( 'attachTo' ) ) || ''
 				);
 			}
 			// If both `config.initialData` is set and initial data is passed as the constructor parameter, then throw.
@@ -259,115 +199,6 @@ export function normalizeRootsConfig(
 		// so downstream code can read it directly without re-running the string / flat-notation normalization.
 		rootConfig.element = normalizeViewRootElementDefinition( rootConfig.element );
 
-		rootsConfig[ rootName ] = rootConfig;
-	}
-
-	// The ClassicEditor has a special separate config option `attachTo`.
-	// It is used as a source of editor data and attachment element, but not the root element.
-	if ( separateAttachTo && isElement( sourceElementsOrData ) ) {
-		if ( config.get( 'attachTo' ) ) {
-			/**
-			 * The element to attach the editor to is specified both as the first argument of
-			 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`}
-			 * and in {@link module:core/editor/editorconfig~EditorConfig#attachTo `config.attachTo`}.
-			 *
-			 * Passing the element as the first argument is deprecated. Remove it and use
-			 * {@link module:core/editor/editorconfig~EditorConfig#attachTo `config.attachTo`} instead.
-			 *
-			 * @error editor-create-attachto-overspecified
-			 */
-			throw new CKEditorError( 'editor-create-attachto-overspecified', null );
-		}
-
-		config.set( 'attachTo', sourceElementsOrData );
-	}
-
-	// The `config.attachTo` is only supported by the ClassicEditor.
-	if ( !separateAttachTo && config.get( 'attachTo' ) ) {
-		/**
-		 * The {@link module:core/editor/editorconfig~EditorConfig#attachTo `config.attachTo`} option is only
-		 * available for the {@link module:editor-classic/classiceditor~ClassicEditor} because it replaces the
-		 * given DOM element with its own UI. Other editor types (e.g. inline, balloon, decoupled) render inside
-		 * the root element directly, so `config.attachTo` is not applicable.
-		 *
-		 * Remove the `attachTo` option from the editor configuration and use
-		 * {@link module:core/editor/editorconfig~RootConfig#element `config.root.element`}
-		 * (or `config.roots.<rootName>.element` for the multi-root editor) to specify the DOM element instead.
-		 *
-		 * @error editor-create-attachto-ignored
-		 */
-		throw new CKEditorError( 'editor-create-attachto-ignored', null );
-	}
-
-	config.set( 'roots', rootsConfig );
-}
-
-/**
- * Normalizes the parameters passed to the editor constructor when a single root is used. It supports both of the following signatures:
- *
- * ```ts
- * new Editor( editorConfig: EditorConfig );
- * new Editor( sourceElementOrData: HTMLElement | string, editorConfig: EditorConfig );
- * ```
- *
- * @internal
- */
-export function normalizeSingleRootEditorConstructorParams(
-	sourceElementOrDataOrConfig: HTMLElement | string | EditorConfig,
-	editorConfig: EditorConfig
-): { sourceElementOrData: HTMLElement | string; editorConfig: EditorConfig } {
-	if (
-		typeof sourceElementOrDataOrConfig === 'string' ||
-		isElement( sourceElementOrDataOrConfig ) ||
-		editorConfig && Object.keys( editorConfig ).length
-	) {
-		return {
-			sourceElementOrData: sourceElementOrDataOrConfig as HTMLElement | string,
-			editorConfig
-		};
-	} else {
-		return {
-			sourceElementOrData: '',
-			editorConfig: sourceElementOrDataOrConfig as EditorConfig
-		};
-	}
-}
-
-/**
- * Normalizes the parameters passed to the editor constructor when a multi root is used. It supports both of the following signatures:
- *
- * ```ts
- * new Editor( editorConfig: EditorConfig );
- * new Editor( sourceElementsOrData: Record<string, string> | Record<string, HTMLElement>, editorConfig: EditorConfig );
- * ```
- *
- * @internal
- */
-export function normalizeMultiRootEditorConstructorParams(
-	sourceElementOrDataOrConfig: Record<string, string> | Record<string, HTMLElement>,
-	editorConfig: EditorConfig
-): { sourceElementsOrData: Record<string, string> | Record<string, HTMLElement>; editorConfig: EditorConfig } {
-	if (
-		editorConfig && Object.keys( editorConfig ).length ||
-		Object.keys( sourceElementOrDataOrConfig ).length == 0 ||
-		Object.values( sourceElementOrDataOrConfig ).every( value => typeof value === 'string' || isElement( value ) )
-	) {
-		return {
-			sourceElementsOrData: sourceElementOrDataOrConfig as Record<string, string> | Record<string, HTMLElement>,
-			editorConfig
-		};
-	} else {
-		return {
-			sourceElementsOrData: {},
-			editorConfig: sourceElementOrDataOrConfig as EditorConfig
-		};
-	}
-}
-
-/**
- * Type guard to check if the provided value is a plain object containing source elements or data.
- */
-function isSourceElementsOrDataRecord(
 	sourceElementsOrData: HTMLElement | string | Record<string, HTMLElement> | Record<string, string>
 ): sourceElementsOrData is Record<string, HTMLElement> | Record<string, string> {
 	return (
