@@ -11,7 +11,8 @@ import {
 	CKEditorError,
 	EmitterMixin,
 	ObservableMixin,
-	logWarning
+	logWarning,
+	type EmitterMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import { Mapper } from '../conversion/mapper.js';
@@ -47,6 +48,8 @@ import { autoParagraphEmptyRoots } from '../model/utils/autoparagraphing.js';
 import { HtmlDataProcessor } from '../dataprocessor/htmldataprocessor.js';
 import { type DataProcessor } from '../dataprocessor/dataprocessor.js';
 
+const DataControllerBase: EmitterMixinConstructor = /* #__PURE__ */ EmitterMixin();
+
 /**
  * Controller for the data pipeline. The data pipeline controls how data is retrieved from the document
  * and set inside it. Hence, the controller features two methods which allow to {@link ~DataController#get get}
@@ -64,7 +67,7 @@ import { type DataProcessor } from '../dataprocessor/dataprocessor.js';
  * editor.data.get( { rootName: 'customRoot' } ); // -> '<p>Hello!</p>'
  * ```
  */
-export class DataController extends /* #__PURE__ */ EmitterMixin() {
+export class DataController extends DataControllerBase {
 	/**
 	 * Data model.
 	 */
@@ -458,6 +461,13 @@ export class DataController extends /* #__PURE__ */ EmitterMixin() {
 	 * Returns the data parsed by the {@link #processor data processor} and then converted by upcast converters
 	 * attached to the {@link #upcastDispatcher}.
 	 *
+	 * **Note:** The default `context` value is `'$root'`, which only matches the generic root. When the editor uses a
+	 * custom root {@link module:core/editor/editorconfig~RootConfig#modelElement `modelElement`}, pass the target
+	 * {@link module:engine/model/rootelement~ModelRootElement root element} (or its configured model element name)
+	 * explicitly, otherwise the conversion result may be wrong.
+	 * See the {@glink framework/deep-dive/schema#custom-root-elements Custom root elements} section of the
+	 * {@glink framework/deep-dive/schema Schema deep-dive} guide for more details.
+	 *
 	 * @see #set
 	 * @param data Data to parse.
 	 * @param context Base context in which the view will be converted to the model.
@@ -479,6 +489,13 @@ export class DataController extends /* #__PURE__ */ EmitterMixin() {
 	 *
 	 * When marker elements were converted during the conversion process, it will be set as a document fragment's
 	 * {@link module:engine/model/documentfragment~ModelDocumentFragment#markers static markers map}.
+	 *
+	 * **Note:** The default `context` value is `'$root'`, which only matches the generic root. When the editor uses a
+	 * custom root {@link module:core/editor/editorconfig~RootConfig#modelElement `modelElement`}, pass the target
+	 * {@link module:engine/model/rootelement~ModelRootElement root element} (or its configured model element name)
+	 * explicitly, otherwise the conversion result may be wrong.
+	 * See the {@glink framework/deep-dive/schema#custom-root-elements Custom root elements} section of the
+	 * {@glink framework/deep-dive/schema Schema deep-dive} guide for more details.
 	 *
 	 * @fires toModel
 	 * @param viewElementOrFragment The element or document fragment whose content will be converted.
@@ -668,46 +685,6 @@ function _getMarkersRelativeToElement( element: ModelElement ): Map<string, Mode
 			}
 		}
 	}
-
-	// Sort the markers in a stable fashion to ensure that the order in which they are
-	// added to the model's marker collection does not affect how they are
-	// downcast. One particular use case that we are targeting here, is one where
-	// two markers are adjacent but not overlapping, such as an insertion/deletion
-	// suggestion pair representing the replacement of a range of text. In this
-	// case, putting the markers in DOM order causes the first marker's end to be
-	// serialized right after the second marker's start, while putting the markers
-	// in reverse DOM order causes it to be right before the second marker's
-	// start. So, we sort these in a way that ensures non-intersecting ranges are in
-	// reverse DOM order, and intersecting ranges are in something approximating
-	// reverse DOM order (since reverse DOM order doesn't have a precise meaning
-	// when working with intersecting ranges).
-	result.sort( ( [ n1, r1 ], [ n2, r2 ] ) => {
-		if ( r1.end.compareWith( r2.start ) !== 'after' ) {
-			// m1.end <= m2.start -- m1 is entirely <= m2
-			return 1;
-		} else if ( r1.start.compareWith( r2.end ) !== 'before' ) {
-			// m1.start >= m2.end -- m1 is entirely >= m2
-			return -1;
-		} else {
-			// they overlap, so use their start positions as the primary sort key and
-			// end positions as the secondary sort key
-			switch ( r1.start.compareWith( r2.start ) ) {
-				case 'before':
-					return 1;
-				case 'after':
-					return -1;
-				default:
-					switch ( r1.end.compareWith( r2.end ) ) {
-						case 'before':
-							return 1;
-						case 'after':
-							return -1;
-						default:
-							return n2.localeCompare( n1 );
-					}
-			}
-		}
-	} );
 
 	return new Map( result );
 }

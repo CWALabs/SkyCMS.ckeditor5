@@ -7,7 +7,7 @@
  * @module media-embed/mediaembed
  */
 
-import { Plugin } from '@ckeditor/ckeditor5-core';
+import { Plugin, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 import { Widget } from '@ckeditor/ckeditor5-widget';
 
 import { MediaEmbedEditing } from './mediaembedediting.js';
@@ -19,7 +19,7 @@ import '../theme/mediaembed.css';
 /**
  * The media embed plugin.
  *
- * For a detailed overview, check the {@glink features/media-embed Media Embed feature documentation}.
+ * For a detailed overview, check the {@glink features/media-embed/media-embed Media Embed feature documentation}.
  *
  * This is a "glue" plugin which loads the following plugins:
  *
@@ -31,8 +31,8 @@ export class MediaEmbed extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ MediaEmbedEditing, MediaEmbedUI, AutoMediaEmbed, Widget ] as const;
+	public static get requires(): PluginDependenciesOf<[ MediaEmbedEditing, MediaEmbedUI, AutoMediaEmbed, Widget ]> {
+		return [ MediaEmbedEditing, MediaEmbedUI, AutoMediaEmbed, Widget ];
 	}
 
 	/**

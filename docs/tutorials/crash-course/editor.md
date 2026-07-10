@@ -9,6 +9,8 @@ modified_at: 2025-03-14
 
 # Editor and configuration
 
+In this part of the crash course, you will set up the project and learn how to create and configure a CKEditor&nbsp;5 editor instance.
+
 ## Test environment
 
 For this tutorial, we have created a minimal setup required to use the editor. To follow along, run the commands below:
@@ -52,7 +54,7 @@ const editor = await ClassicEditor.create( {
 } );
 ```
 
-As you can see, the {@link module:core/editor/editor~Editor.create `create()`} method creates a new editor instance. It replaces the DOM element passed as the first argument with the editor UI, and sets the initial state of the editor to the content of that DOM element.
+As you can see, the {@link module:core/editor/editor~Editor.create `create()`} method creates a new editor instance. It replaces the DOM element passed in the configuration with the editor UI, and sets the initial state of the editor to the content of that DOM element.
 
 However, you may have noticed that the "Hello world!" text does not appear in the editor, and you cannot write anything in it. This may seem strange at first, but it is by design. Let's fix this with the right configuration.
 
@@ -75,7 +77,7 @@ const editor = await ClassicEditor.create( {
 } );
 ```
 
-As shown in the example above, the {@link module:core/editor/editor~Editor.create `create()`} method takes a configuration object as its second parameter. In this object, we can pass the `plugins` array with the plugins we want to use.
+As shown in the example above, the {@link module:core/editor/editor~Editor.create `create()`} method takes a configuration object as its parameter. In this object, we can pass the `plugins` array with the plugins we want to use.
 
 When the page refreshes, you should see the "Hello world!" text in the editor and be able to type in it.
 

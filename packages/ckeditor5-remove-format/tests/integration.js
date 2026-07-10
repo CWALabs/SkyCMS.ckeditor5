@@ -16,6 +16,8 @@ import {
 	_setModelData
 } from '@ckeditor/ckeditor5-engine';
 
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
 describe( 'RemoveFormat', () => {
 	let editor, model, element;
 
@@ -40,13 +42,13 @@ describe( 'RemoveFormat', () => {
 	} );
 
 	it( 'does not remove image width attribute', () => {
-		// (#9684)
+		// (https://github.com/ckeditor/ckeditor5/issues/9684)
 		_setModelData( model, '[<imageBlock src="assets/sample.png" width="50%"><caption>caption</caption></imageBlock>]' );
 
 		editor.execute( 'removeFormat' );
 
 		expect( _getModelData( model ) )
-			.to.equal( '[<imageBlock src="assets/sample.png" width="50%"><caption>caption</caption></imageBlock>]' );
+			.toEqual( '[<imageBlock src="assets/sample.png" width="50%"><caption>caption</caption></imageBlock>]' );
 	} );
 
 	describe( 'works correctly with multiline ranges', () => {
@@ -57,7 +59,7 @@ describe( 'RemoveFormat', () => {
 			editor.execute( 'removeFormat' );
 
 			expect( _getModelData( model ) )
-				.to.equal( '<paragraph>foo[foo</paragraph><paragraph>bar]bar</paragraph>' );
+				.toEqual( '<paragraph>foo[foo</paragraph><paragraph>bar]bar</paragraph>' );
 		} );
 
 		it( 'does not touch non-formatting markup', () => {
@@ -67,7 +69,7 @@ describe( 'RemoveFormat', () => {
 			editor.execute( 'removeFormat' );
 
 			expect( _getModelData( model ) )
-				.to.equal( '<paragraph>[<$text linkHref="url">foo</$text></paragraph>' +
+				.toEqual( '<paragraph>[<$text linkHref="url">foo</$text></paragraph>' +
 					'<imageBlock src="assets/sample.png"><caption>caption</caption></imageBlock><paragraph>bar]</paragraph>' );
 		} );
 
@@ -80,7 +82,7 @@ describe( 'RemoveFormat', () => {
 			editor.execute( 'removeFormat' );
 
 			expect( _getModelData( model ) )
-				.to.equal( '<paragraph>' +
+				.toEqual( '<paragraph>' +
 					'[</paragraph><imageBlock src="assets/sample.png"><caption>foo</caption></imageBlock><paragraph>bar]</paragraph>' );
 		} );
 	} );
@@ -96,7 +98,7 @@ describe( 'RemoveFormat', () => {
 
 			editor.execute( 'removeFormat' );
 
-			expect( _getModelData( model ) ).to.equal( '<paragraph>f[ooba]r</paragraph>' );
+			expect( _getModelData( model ) ).toEqual( '<paragraph>f[ooba]r</paragraph>' );
 		} );
 	} );
 } );

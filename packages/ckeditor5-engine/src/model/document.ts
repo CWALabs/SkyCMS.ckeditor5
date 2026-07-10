@@ -25,7 +25,8 @@ import {
 	Collection,
 	EmitterMixin,
 	isInsideSurrogatePair,
-	isInsideCombinedSymbol
+	isInsideCombinedSymbol,
+	type EmitterMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import { clone } from 'es-toolkit/compat';
@@ -33,6 +34,8 @@ import { clone } from 'es-toolkit/compat';
 // @if CK_DEBUG_ENGINE // const { logDocument } = require( '../dev-utils/utils' );
 
 const graveyardName = '$graveyard';
+
+const ModelDocumentBase: EmitterMixinConstructor = /* #__PURE__ */ EmitterMixin();
 
 /**
  * Data model's document. It contains the model's structure, its selection and the history of changes.
@@ -50,7 +53,7 @@ const graveyardName = '$graveyard';
  * However, the document may contain multiple roots – e.g. when the editor has multiple editable areas
  * (e.g. a title and a body of a message).
  */
-export class ModelDocument extends /* #__PURE__ */ EmitterMixin() {
+export class ModelDocument extends ModelDocumentBase {
 	/**
 	 * The {@link module:engine/model/model~Model model} that the document is a part of.
 	 */
@@ -226,6 +229,12 @@ export class ModelDocument extends /* #__PURE__ */ EmitterMixin() {
 	 *
 	 * **Note:** do not use this method after the editor has been initialized! If you want to dynamically add a root, use
 	 * {@link module:engine/model/writer~ModelWriter#addRoot `model.Writer#addRoot`} instead.
+	 *
+	 * **Note:** The default `elementName` value is `'$root'`. When the editor uses a custom root
+	 * {@link module:core/editor/editorconfig~RootConfig#modelElement `modelElement`}, pass the configured model element
+	 * name explicitly so the created root matches the schema the features expect.
+	 * See the {@glink framework/deep-dive/schema#custom-root-elements Custom root elements} section of the
+	 * {@glink framework/deep-dive/schema Schema deep-dive} guide for more details.
 	 *
 	 * @param elementName The element name. Defaults to `'$root'` which also has some basic schema defined
 	 * (e.g. `$block` elements are allowed inside the `$root`). Make sure to define a proper schema if you use a different name.

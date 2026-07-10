@@ -7,7 +7,7 @@
  * @module image/imageresize/imagecustomresizeui
  */
 
-import { Plugin, type Editor } from '@ckeditor/ckeditor5-core';
+import { Plugin, type Editor, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 import {
 	ContextualBalloon,
 	clickOutsideHandler,
@@ -45,8 +45,8 @@ export class ImageCustomResizeUI extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ ContextualBalloon ] as const;
+	public static get requires(): PluginDependenciesOf<[ ContextualBalloon ]> {
+		return [ ContextualBalloon ];
 	}
 
 	/**
@@ -69,7 +69,7 @@ export class ImageCustomResizeUI extends Plugin {
 	public override destroy(): void {
 		super.destroy();
 
-		// Destroy created UI components as they are not automatically destroyed (see ckeditor5#1341).
+		// Destroy created UI components as they are not automatically destroyed (see https://github.com/ckeditor/ckeditor5/issues/1341).
 		if ( this._form ) {
 			this._form.destroy();
 		}

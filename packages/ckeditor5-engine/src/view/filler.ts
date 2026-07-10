@@ -3,11 +3,6 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import { keyCodes, isText, type KeystrokeInfo } from '@ckeditor/ckeditor5-utils';
-import { type EditingView } from './view.js';
-import { type ViewDocumentDomEventData } from './observer/domeventdata.js';
-import type { ViewDocumentArrowKeyEvent } from './observer/arrowkeysobserver.js';
-
 /**
  * Set of utilities related to handling block and inline fillers.
  *
@@ -36,6 +31,11 @@ import type { ViewDocumentArrowKeyEvent } from './observer/arrowkeysobserver.js'
  *
  * @module engine/view/filler
  */
+
+import { keyCodes, isText, type KeystrokeInfo } from '@ckeditor/ckeditor5-utils';
+import { type EditingView } from './view.js';
+import { type ViewDocumentDomEventData } from './observer/domeventdata.js';
+import type { ViewDocumentArrowKeyEvent } from './observer/arrowkeysobserver.js';
 
 /**
  * Non-breaking space filler creator. This function creates the `&nbsp;` text node.
@@ -90,7 +90,7 @@ export const INLINE_FILLER_LENGTH = 7;
  *
  * @internal
  */
-export const INLINE_FILLER = '\u2060'.repeat( INLINE_FILLER_LENGTH );
+export const INLINE_FILLER: string = '\u2060'.repeat( INLINE_FILLER_LENGTH );
 
 /**
  * Checks if the node is a text node which starts with the {@link module:engine/view/filler~INLINE_FILLER inline filler}.

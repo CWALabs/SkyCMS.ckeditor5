@@ -3,6 +3,8 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { ListEditing } from '../../../src/list/listediting.js';
 import { stubUid } from '../_utils/uid.js';
 import { modelList } from '../_utils/utils.js';
@@ -11,7 +13,6 @@ import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classic
 import { IndentEditing, IndentBlock } from '@ckeditor/ckeditor5-indent';
 import { BlockQuoteEditing } from '@ckeditor/ckeditor5-block-quote';
 import { CodeBlockEditing } from '@ckeditor/ckeditor5-code-block';
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import {
 	_getModelData,
@@ -26,7 +27,9 @@ describe( 'Indent MultiCommand integrations', () => {
 	let indentListcommand, outdentListcommand,
 		commandSpies;
 
-	testUtils.createSinonSandbox();
+	afterEach( () => {
+		vi.restoreAllMocks();
+	} );
 
 	beforeEach( async () => {
 		element = document.createElement( 'div' );
@@ -47,8 +50,8 @@ describe( 'Indent MultiCommand integrations', () => {
 		outdentListcommand = editor.commands.get( 'outdentList' );
 
 		commandSpies = {
-			indentList: sinon.spy( indentListcommand, 'execute' ),
-			outdentList: sinon.spy( outdentListcommand, 'execute' )
+			indentList: vi.spyOn( indentListcommand, 'execute' ),
+			outdentList: vi.spyOn( outdentListcommand, 'execute' )
 		};
 
 		blocksChangedByCommands.length = 0;
@@ -73,8 +76,8 @@ describe( 'Indent MultiCommand integrations', () => {
 			const indentBlockCommand = editor.commands.get( 'indentBlock' );
 			const outdentBlockCommand = editor.commands.get( 'outdentBlock' );
 
-			commandSpies.indentBlock = sinon.spy( indentBlockCommand, 'execute' );
-			commandSpies.outdentBlock = sinon.spy( outdentBlockCommand, 'execute' );
+			commandSpies.indentBlock = vi.spyOn( indentBlockCommand, 'execute' );
+			commandSpies.outdentBlock = vi.spyOn( outdentBlockCommand, 'execute' );
 		} );
 
 		describe( 'indent command', () => {
@@ -1193,8 +1196,8 @@ describe( 'Indent MultiCommand integrations', () => {
 			const indentCodeBlockCommand = editor.commands.get( 'indentCodeBlock' );
 			const outdentCodeBlockcommand = editor.commands.get( 'outdentCodeBlock' );
 
-			commandSpies.indentCodeBlock = sinon.spy( indentCodeBlockCommand, 'execute' );
-			commandSpies.outdentCodeBlock = sinon.spy( outdentCodeBlockcommand, 'execute' );
+			commandSpies.indentCodeBlock = vi.spyOn( indentCodeBlockCommand, 'execute' );
+			commandSpies.outdentCodeBlock = vi.spyOn( outdentCodeBlockcommand, 'execute' );
 		} );
 
 		describe( 'indent command', () => {
@@ -1498,6 +1501,158 @@ describe( 'Indent MultiCommand integrations', () => {
 		} );
 	} );
 
+	describe( 'list with indent block and enableSkipLevelLists', () => {
+		let element, editor, model;
+		let indentListSpy, outdentListSpy, indentBlockListSpy, outdentBlockListSpy;
+
+		beforeEach( async () => {
+			element = document.createElement( 'div' );
+			document.body.appendChild( element );
+
+			editor = await ClassicTestEditor.create( element, {
+				plugins: [ Paragraph, ListEditing, IndentEditing, IndentBlock ],
+				list: {
+					enableSkipLevelLists: true
+				}
+			} );
+
+			model = editor.model;
+
+			indentListSpy = vi.spyOn( editor.commands.get( 'indentList' ), 'execute' );
+			outdentListSpy = vi.spyOn( editor.commands.get( 'outdentList' ), 'execute' );
+			indentBlockListSpy = vi.spyOn( editor.commands.get( 'indentBlockList' ), 'execute' );
+			outdentBlockListSpy = vi.spyOn( editor.commands.get( 'outdentBlockList' ), 'execute' );
+		} );
+
+		afterEach( async () => {
+			element.remove();
+			await editor.destroy();
+		} );
+
+		describe( 'indent command', () => {
+			it( 'should execute indentBlockList when at start of first list item at indent 0', () => {
+				_setModelData( model, modelList( [
+					'* []A',
+					'* B'
+				] ) );
+
+				editor.commands.get( 'indent' ).execute();
+
+				expect( indentBlockListSpy.mock.calls.length ).to.equal( 1, 'indentBlockList command call count' );
+				expect( indentListSpy.mock.calls.length ).to.equal( 0, 'indentList command call count' );
+			} );
+
+			it( 'should execute indentBlockList when a non-collapsed selection starts at the start of first list item at indent 0', () => {
+				_setModelData( model, modelList( [
+					'* [A]',
+					'* B'
+				] ) );
+
+				editor.commands.get( 'indent' ).execute();
+
+				expect( indentBlockListSpy.mock.calls.length ).to.equal( 1, 'indentBlockList command call count' );
+				expect( indentListSpy.mock.calls.length ).to.equal( 0, 'indentList command call count' );
+			} );
+
+			it( 'should execute indentList when cursor is not at start of first list item', () => {
+				_setModelData( model, modelList( [
+					'* A[]',
+					'* B'
+				] ) );
+
+				editor.commands.get( 'indent' ).execute();
+
+				expect( indentBlockListSpy.mock.calls.length ).to.equal( 0, 'indentBlockList command call count' );
+				expect( indentListSpy.mock.calls.length ).to.equal( 1, 'indentList command call count' );
+			} );
+
+			it( 'should execute indentList when at start of first skip-level list item (indent > 0)', () => {
+				_setModelData( model, modelList( [
+					'  * []A'
+				] ) );
+
+				editor.commands.get( 'indent' ).execute();
+
+				expect( indentBlockListSpy.mock.calls.length ).to.equal( 0, 'indentBlockList command call count' );
+				expect( indentListSpy.mock.calls.length ).to.equal( 1, 'indentList command call count' );
+			} );
+
+			it( 'should execute indentList when at start of second list item', () => {
+				_setModelData( model, modelList( [
+					'* A',
+					'* []B'
+				] ) );
+
+				editor.commands.get( 'indent' ).execute();
+
+				expect( indentBlockListSpy.mock.calls.length ).to.equal( 0, 'indentBlockList command call count' );
+				expect( indentListSpy.mock.calls.length ).to.equal( 1, 'indentList command call count' );
+			} );
+
+			it( 'should execute indentList (not indentBlockList) when at start of a top-level item ' +
+				'placed after a skip-level nested list', () => {
+				// `B` is the second visible item in the outer list, so Tab should indent it as a list item
+				// (joining the nested list under the intermediate wrapper), not apply block indent.
+				_setModelData( model, modelList( [
+					'  # A',
+					'# []B'
+				] ) );
+
+				editor.commands.get( 'indent' ).execute();
+
+				expect( indentBlockListSpy.mock.calls.length ).to.equal( 0, 'indentBlockList command call count' );
+				expect( indentListSpy.mock.calls.length ).to.equal( 1, 'indentList command call count' );
+
+				expect( _getModelData( model ) ).to.equalMarkup( modelList( [
+					'  # A',
+					'  # []B'
+				] ) );
+			} );
+		} );
+
+		describe( 'outdent command', () => {
+			it( 'should execute outdentBlockList when at start of first list item at indent 0 with block indent', () => {
+				_setModelData( model, modelList( [
+					'* []A',
+					'* B'
+				] ) );
+
+				// Apply block indent first so outdentBlockList can be enabled.
+				model.change( writer => {
+					writer.setAttribute( 'blockIndentList', '40px', model.document.getRoot().getChild( 0 ) );
+					writer.setAttribute( 'blockIndentList', '40px', model.document.getRoot().getChild( 1 ) );
+				} );
+
+				editor.commands.get( 'outdent' ).execute();
+
+				expect( outdentBlockListSpy.mock.calls.length ).to.equal( 1, 'outdentBlockList command call count' );
+				expect( outdentListSpy.mock.calls.length ).to.equal( 0, 'outdentList command call count' );
+			} );
+
+			it( 'should execute outdentList when at start of first skip-level list item (indent > 0)', () => {
+				_setModelData( model, modelList( [
+					'  * []A'
+				] ) );
+
+				editor.commands.get( 'outdent' ).execute();
+
+				expect( outdentBlockListSpy.mock.calls.length ).to.equal( 0, 'outdentBlockList command call count' );
+				expect( outdentListSpy.mock.calls.length ).to.equal( 1, 'outdentList command call count' );
+			} );
+
+			it( 'should execute outdentList when at start of first list item at indent 0 without block indent', () => {
+				_setModelData( model, modelList( [
+					'* []A'
+				] ) );
+
+				editor.commands.get( 'outdent' ).execute();
+
+				expect( outdentBlockListSpy.mock.calls.length ).to.equal( 0, 'outdentBlockList command call count' );
+				expect( outdentListSpy.mock.calls.length ).to.equal( 1, 'outdentList command call count' );
+			} );
+		} );
+	} );
+
 	// @param {Iterable.<String>} input
 	// @param {Iterable.<String>} expected
 	// @param {String} commandName Name of a command to execute.
@@ -1516,7 +1671,7 @@ describe( 'Indent MultiCommand integrations', () => {
 		expect( _getModelData( model ) ).to.equalMarkup( modelList( expected ) );
 
 		for ( const name in executedCommands ) {
-			expect( commandSpies[ name ].callCount ).to.equal( executedCommands[ name ], `${ name } command call count` );
+			expect( commandSpies[ name ].mock.calls.length ).to.equal( executedCommands[ name ], `${ name } command call count` );
 		}
 
 		expect( blocksChangedByCommands.map( block => block.index ) ).to.deep.equal( changedBlocks, 'changed blocks\' indexes' );

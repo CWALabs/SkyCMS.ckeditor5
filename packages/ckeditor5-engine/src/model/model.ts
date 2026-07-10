@@ -36,7 +36,8 @@ import {
 	CKEditorError,
 	ObservableMixin,
 	type DecoratedMethodEvent,
-	type Config
+	type Config,
+	type ObservableMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import type { EngineConfig } from '../engineconfig.js';
@@ -44,11 +45,13 @@ import type { EngineConfig } from '../engineconfig.js';
 // @if CK_DEBUG_ENGINE // const { dumpTrees, initDocumentDumping } = require( '../dev-utils/utils' );
 // @if CK_DEBUG_ENGINE // const { OperationReplayer } = require( '../dev-utils/operationreplayer' ).default;
 
+const ModelBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
+
 /**
  * Editor's data model. Read about the model in the
  * {@glink framework/architecture/editing-engine engine architecture} guide.
  */
-export class Model extends /* #__PURE__ */ ObservableMixin() {
+export class Model extends ModelBase {
 	/**
 	 * Model's marker collection.
 	 */
@@ -112,6 +115,12 @@ export class Model extends /* #__PURE__ */ ObservableMixin() {
 			isLimit: true
 		} );
 
+		this.schema.register( '$inlineRoot', {
+			allowContentOf: '$block',
+			allowAttributesOf: '$root',
+			isLimit: true
+		} );
+
 		this.schema.register( '$container', {
 			allowIn: [ '$root', '$container' ]
 		} );
@@ -141,13 +150,13 @@ export class Model extends /* #__PURE__ */ ObservableMixin() {
 		} );
 
 		this.schema.register( '$clipboardHolder', {
-			allowContentOf: '$root',
+			allowContentOf: [ '$root', '$inlineRoot' ],
 			allowChildren: '$text',
 			isLimit: true
 		} );
 
 		this.schema.register( '$documentFragment', {
-			allowContentOf: '$root',
+			allowContentOf: [ '$root', '$inlineRoot' ],
 			allowChildren: '$text',
 			isLimit: true
 		} );
@@ -249,7 +258,6 @@ export class Model extends /* #__PURE__ */ ObservableMixin() {
 			}
 		} catch ( err: any ) {
 			// @if CK_DEBUG // throw err;
-			/* istanbul ignore next -- @preserve */
 			CKEditorError.rethrowUnexpectedError( err, this );
 		}
 	}
@@ -361,7 +369,6 @@ export class Model extends /* #__PURE__ */ ObservableMixin() {
 			}
 		} catch ( err: any ) {
 			// @if CK_DEBUG // throw err;
-			/* istanbul ignore next -- @preserve */
 			CKEditorError.rethrowUnexpectedError( err, this );
 		}
 	}

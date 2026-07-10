@@ -13,7 +13,8 @@ import {
 	ObservableMixin,
 	compareArrays,
 	type ObservableChangeEvent,
-	type DecoratedMethodEvent
+	type DecoratedMethodEvent,
+	type ObservableMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import { WidgetResizeState } from './resizerstate.js';
@@ -22,10 +23,12 @@ import { SizeView } from './sizeview.js';
 import type { WidgetResizerOptions } from '../widgetresize.js';
 import type { ViewElement } from '@ckeditor/ckeditor5-engine';
 
+const WidgetResizerBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
+
 /**
  * Represents a resizer for a single resizable object.
  */
-export class WidgetResizer extends /* #__PURE__ */ ObservableMixin() {
+export class WidgetResizer extends WidgetResizerBase {
 	/**
 	 * Flag that indicates whether resizer can be used.
 	 *
@@ -95,7 +98,7 @@ export class WidgetResizer extends /* #__PURE__ */ ObservableMixin() {
 
 		this.on( 'commit', event => {
 			// State might not be initialized yet. In this case, prevent further handling and make sure that the resizer is
-			// cleaned up (#5195).
+			// cleaned up (https://github.com/ckeditor/ckeditor5/issues/5195).
 			if ( !this.state.proposedWidth && !this.state.proposedWidthPercents ) {
 				this._cleanup();
 				event.stop();

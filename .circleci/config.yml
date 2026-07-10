@@ -16,17 +16,10 @@ version: 2.1
 
 setup: true
 
-# List of parameters must be synchronized between configuration files.
 parameters:
-  isNightly:
-    type: boolean
-    default: false
-  isStaleBot:
-    type: boolean
-    default: false
   chromeVersion:
     type: string
-    default: "146.0.7680.71"
+    default: "149.0.7827.53"
   isLtsPipeline:
     type: boolean
     default: false
@@ -59,28 +52,8 @@ jobs:
     docker:
       - image: cimg/node:24.11.0
     resource_class: medium
-    parameters:
-      isNightly:
-        type: boolean
     steps:
       - checkout_command
-      - run:
-          name: Verify if the job should continue
-          command: |
-            #!/bin/bash
-
-            IS_NIGHTLY=<< pipeline.parameters.isNightly >>
-
-            if [[ "$IS_NIGHTLY" == "true" ]]; then
-              exit 0
-            fi
-
-            COMMIT_MESSAGE=$(git log -n 1 --pretty=format:%s ${CIRCLE_SHA1})
-
-            if [[ "$COMMIT_MESSAGE" == *"[skip ci]" ]]; then
-              echo "Skipping, because the commit message contains '[skip ci]'."
-              circleci-agent step halt
-            fi
       - install_ssh_keys_command
       - run:
           name: Disable Corepack
@@ -104,4 +77,7 @@ workflows:
   config:
     jobs:
       - generate_configuration:
-          isNightly: false
+          filters:
+            branches:
+              only:
+                - master

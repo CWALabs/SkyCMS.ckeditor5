@@ -7,6 +7,7 @@
  * @module editor-classic/classiceditor
  */
 
+import { CKEditorError } from '@ckeditor/ckeditor5-utils';
 import { ClassicEditorUI } from './classiceditorui.js';
 import { ClassicEditorUIView } from './classiceditoruiview.js';
 
@@ -16,87 +17,21 @@ import {
 	attachToForm,
 	normalizeRootsConfig,
 	normalizeSingleRootEditorConstructorParams,
-	type EditorConfig,
-	type EditorReadyEvent
-} from '@ckeditor/ckeditor5-core';
-
-import { isElement as _isElement } from 'es-toolkit/compat';
-
-/**
- * The classic editor implementation. It uses an inline editable and a sticky toolbar, all enclosed in a boxed UI.
- * See the {@glink examples/builds/classic-editor demo}.
- *
- * In order to create a classic editor instance, use the static
- * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`} method.
- */
-export class ClassicEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
-	/**
-	 * @inheritDoc
-	 */
-	public static override get editorName(): 'ClassicEditor' {
-		return 'ClassicEditor';
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public readonly ui: ClassicEditorUI;
-
-	/**
-	 * Creates an instance of the classic editor.
-	 *
-	 * **Note:** do not use the constructor to create editor instances. Use the static
-	 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`} method instead.
-	 *
-	 * @param config The editor configuration.
-	 */
-	protected constructor( config: EditorConfig );
-
-	/**
-	 * Creates an instance of the classic editor.
-	 *
-	 * **Note:** do not use the constructor to create editor instances. Use the static
-	 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`} method instead.
-	 *
-	 * **Note**: This constructor signature is deprecated and will be removed in the future release.
-	 *
-	 * @deprecated
-	 * @param sourceElementOrData The DOM element that will be the source for the created editor
-	 * or the editor's initial data. For more information see
-	 * {@link module:editor-classic/classiceditor~ClassicEditor.create `ClassicEditor.create()`}.
-	 * @param config The editor configuration.
-	 */
-	protected constructor( sourceElementOrData: HTMLElement | string, config: EditorConfig );
-
-	protected constructor( sourceElementOrDataOrConfig: HTMLElement | string | EditorConfig, config: EditorConfig = {} ) {
-		const {
-			sourceElementOrData,
-			editorConfig
-		} = normalizeSingleRootEditorConstructorParams( sourceElementOrDataOrConfig, config );
-
-		super( editorConfig );
-
-		normalizeRootsConfig( sourceElementOrData, this.config, 'main', true );
-
-		// From this point use only normalized `roots.main.element`.
-		const sourceElement = this.config.get( 'attachTo' );
-
-		this.config.define( 'menuBar.isVisible', false );
-
-		if ( isElement( sourceElement ) ) {
-			this.sourceElement = sourceElement;
-		}
-
-		this.model.document.createRoot();
+	registerAndInitializeRootConfigAttributes,
+	verifyRootElements,
 
 		const shouldToolbarGroupWhenFull = !this.config.get( 'toolbar.shouldNotGroupWhenFull' );
 
 		const menuBarConfig = this.config.get( 'menuBar' )!;
 
+		// The `normalizeRootsConfig()` already normalized this.
+		const editableElement = this.config.get( 'roots' )!.main.element as ViewRootElementDefinition | undefined;
+
 		const view = new ClassicEditorUIView( this.locale, this.editing.view, {
 			shouldToolbarGroupWhenFull,
 			useMenuBar: menuBarConfig.isVisible,
-			label: this.config.get( 'roots' )!.main.label
+			label: this.config.get( 'roots' )!.main.label,
+			editableElement
 		} );
 
 		this.ui = new ClassicEditorUI( this, view );
@@ -111,14 +46,18 @@ export class ClassicEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
 	 * {@link module:core/editor/editorconfig~EditorConfig#updateSourceElementOnDestroy `updateSourceElementOnDestroy`}
 	 * configuration option is set to `true`.
 	 */
-	public override destroy(): Promise<unknown> {
+	public override async destroy(): Promise<unknown> {
 		if ( this.sourceElement ) {
 			this.updateSourceElement();
 		}
 
 		this.ui.destroy();
 
-		return super.destroy();
+		await super.destroy();
+
+		// To satisfy the return type and to keep it backward compatible.
+		// eslint-disable-next-line no-useless-return
+		return;
 	}
 
 	/**
@@ -300,21 +239,25 @@ export class ClassicEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
 	 */
 	public static override create( sourceElementOrData: HTMLElement | string, config: EditorConfig ): Promise<ClassicEditor>;
 
-	public static override create(
+	public static override async create(
 		sourceElementOrDataOrConfig: HTMLElement | string | EditorConfig,
 		config: EditorConfig = {}
 	): Promise<ClassicEditor> {
-		return new Promise( resolve => {
-			const editor = new this( sourceElementOrDataOrConfig as any, config );
+		const editor = new this( sourceElementOrDataOrConfig as any, config );
 
-			resolve(
-				editor.initPlugins()
-					.then( () => editor.ui.init( editor.config.get( 'attachTo' ) || null ) )
-					.then( () => editor.data.init( editor.config.get( 'roots' )!.main.initialData! ) )
-					.then( () => editor.fire<EditorReadyEvent>( 'ready' ) )
-					.then( () => editor )
-			);
-		} );
+		await editor.initPlugins();
+
+		// Roots are created in the editor constructor (before plugins are loaded), but the schema is only fully
+		// built after plugins register their items during init(). Custom root element names (e.g. registered by a
+		// plugin) may not exist in the schema at construction time, so we defer this check until here.
+		verifyRootElements( editor );
+
+		await editor.ui.init( editor.config.get( 'attachTo' ) || null );
+		await editor.data.init( editor.config.get( 'roots' )!.main.initialData! );
+
+		editor.fire<EditorReadyEvent>( 'ready' );
+
+		return editor;
 	}
 }
 

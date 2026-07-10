@@ -8,7 +8,7 @@ modified_at: 2022-11-03
 
 # Code style
 
-{@link framework/contributing/development-environment CKEditor&nbsp;5 development environment} has ESLint enabled both as a pre-commit hook and on CI. This means that code style issues are detected automatically. Additionally, `.editorconfig` files are present in every repository to automatically adjust your IDE settings (if it is configured to read them).
+{@link framework/contributing/development-environment CKEditor&nbsp;5 development environment} has ESLint enabled on CI. This means that code style issues are detected automatically. Additionally, `.editorconfig` files are present in every repository to automatically adjust your IDE settings (if it is configured to read them).
 
 Here is a quick summary of these rules.
 
@@ -344,13 +344,12 @@ foo();
 
 ## Linting
 
-CKEditor&nbsp;5 development environment uses [ESLint](https://eslint.org) and [stylelint](https://stylelint.io/).
+CKEditor&nbsp;5 development environment uses [ESLint](https://eslint.org), including its [native CSS linting support](https://eslint.org/blog/2025/02/eslint-css-support/).
 
 A couple of useful links:
 
 * [Disabling ESLint with inline comments](https://eslint.org/docs/latest/use/configure/).
 * [CKEditor&nbsp;5 ESLint preset](https://github.com/ckeditor/ckeditor5-linters-config/blob/master/packages/eslint-config-ckeditor5/eslint.config.mjs) (npm: [`eslint-config-ckeditor5`](http://npmjs.com/package/eslint-config-ckeditor5)).
-* [CKEditor&nbsp;5 stylelint preset](https://github.com/ckeditor/ckeditor5-linters-config/blob/master/packages/stylelint-config-ckeditor5/.stylelintrc) (npm: [`stylelint-config-ckeditor5`](https://www.npmjs.com/package/stylelint-config-ckeditor5)).
 
 <info-box>
 	Avoid using automatic code formatters on existing code. It is fine to automatically format code that you are editing, but you should not be changing the formatting of the code that is already written to not pollute your PRs. You should also not rely solely on automatic corrections.
@@ -1007,7 +1006,7 @@ import { Table } from 'ckeditor5';
 
 In TypeScript, the types inferred from some values are simplified. For example, the type of `const test = [1, 2, 3];` is `number[]`, but in some cases a more specific type may be needed. Using `as const` can help with this. For example, the type of `const test1 = [1, 2, 3] as const;` is `readonly [1, 2, 3]`.
 
-The `require-as-const-returns-in-methods` rule requires some methods that depend on the exact type of returned data (for example, `'delete'` literal string instead of the generic `string` in the `pluginName` method, or `readonly [typeof Table]` instead of `[]` in the `requires` method) to have all return statements with `as const`.
+The `require-as-const-returns-in-methods` rule requires some methods that depend on the exact type of returned data (for example, `'delete'` literal string instead of the generic `string` in the `pluginName` method) to have all return statements with `as const`.
 
 👎&nbsp; Examples of incorrect code for this rule:
 
@@ -1035,6 +1034,34 @@ export default class Delete extends Plugin {
 		return 'Delete' as const;
 	}
 }
+```
+
+### Disallow TypeScript enums: `ckeditor5-rules/no-enum`
+
+<info-box warning>
+  This rule should only be used on `.ts` files.
+</info-box>
+
+TypeScript `enum` declarations are disallowed because they emit runtime code that is hard to tree-shake, behave inconsistently between numeric and string enums, and do not mix well with structural typing. Prefer a `const` object combined with a union type derived from its values, which produces a lighter and more predictable output.
+
+👎&nbsp; Examples of incorrect code for this rule:
+
+```ts
+enum Direction {
+	Up = 'up',
+	Down = 'down'
+}
+```
+
+👍&nbsp; Examples of correct code for this rule:
+
+```ts
+const Direction = {
+	Up: 'up',
+	Down: 'down'
+} as const;
+
+type Direction = typeof Direction[ keyof typeof Direction ];
 ```
 
 ### Imports within a package: `ckeditor5-rules/no-scoped-imports-within-package`
@@ -1071,6 +1098,16 @@ As required by the [ECMAScript (ESM)](https://developer.mozilla.org/en-US/docs/W
 The second case is common for the documentation files, because its pieces are located in different directories and repositories. These pieces are merged during the build step, but before that, the imports are technically invalid.
 
 In such cases, you must add the file extension manually. Imports with file extensions are not validated.
+
+### Valid `@module` tags: `ckeditor5-rules/validate-module-tag`
+
+<info-box warning>
+	This rule should only be used on `.ts` files in package `src/` directories.
+</info-box>
+
+This rule requires a file-level `@module` JSDoc tag at the top of each TypeScript source file in `packages/*/src`. The tag value must match the file path.
+
+For example, `packages/ckeditor5-feature/src/featureediting.ts` should start with `@module feature/featureediting`. For `index.ts` files, both `@module feature` and `@module feature/index` are allowed. The `augmentation.ts` file is excluded from this rule.
 
 ### Require or disallow certain plugin flags: `ckeditor5-rules/ckeditor-plugin-flags`
 
@@ -1139,9 +1176,104 @@ This rule ensures that SVG files are imported and exported only in the `@ckedito
 
 This rule ensures that changelog entry files are populated with proper data and a clear description of the change. For a full guide on how to populate changelog entries, see the {@link framework/contributing/changelog-entries Changelog entries} guide.
 
-## CKEditor&nbsp;5 custom Stylelint rules
+### Disallow hardcoded `$root` literals: `ckeditor5-rules/no-literal-dollar-root`
 
-In addition to the rules provided by Stylelint, CKEditor&nbsp;5 uses a few custom rules described below.
+This rule disallows the literal `'$root'` string anywhere it could be used as a schema context. Hardcoding `'$root'` is silently wrong when {@link module:core/editor/editorconfig~RootConfig#modelElement `config.root.modelElement`} is customized: the runtime root no longer matches the literal, and any schema check or upcast against it operates against the wrong element name. See the {@link getting-started/setup/root-types Root types} guide for an overview of the available root model element types.
+
+The rule also reports two specific patterns that have a name-agnostic replacement and provides an auto-fix for them:
+
+* `node.is( 'element', '$root' )` → `node.is( 'rootElement' )`
+* `node.name === '$root'` / `node.name !== '$root'` → `node.is( 'rootElement' )` / `!node.is( 'rootElement' )`
+
+Options:
+
+* `allowedPackages` &ndash; (optional) A list of package name fragments whose source files are exempt from the rule. Used for `ckeditor5-engine` and `ckeditor5-core` where `'$root'` is the canonical schema element name being defined.
+* `allowedCalls` &ndash; (optional) A list of method names where a `'$root'` literal argument is permitted (e.g. `is` so that `node.is( '$root' )` is allowed alongside the canonical `node.is( 'rootElement' )` form).
+
+The rule also has a narrow built-in exception: a `'$root'` literal under a `context` property of an options object passed to a view-event listener method (`listenTo()`, `on()`, `once()`, `off()`) is not flagged, because in that position `'$root'` is a view-tree bubbling target — not the schema element name.
+
+👎&nbsp; Examples of incorrect code for this rule:
+
+```ts
+const ROOT_NAME = '$root';
+
+if ( node.is( 'element', '$root' ) ) { /* ... */ }
+
+if ( modelElement.name === '$root' ) { /* ... */ }
+
+writer.addRoot( newRoot, '$root' );
+```
+
+👍&nbsp; Examples of correct code for this rule:
+
+```ts
+if ( node.is( 'rootElement' ) ) { /* ... */ }
+
+if ( modelElement.is( 'rootElement' ) ) { /* ... */ }
+
+// View-event listener `context` option — `'$root'` here is a view-tree bubbling target.
+this.listenTo( viewDocument, 'arrowKey', handler, { context: '$root' } );
+
+// Adding attributes to the default root element is the documented escape hatch.
+schema.extend( '$root', { allowAttributes: [ 'foo' ] } );
+```
+
+If the literal `'$root'` is the right value at a call site, opt out with an `// eslint-disable-next-line` comment that explains why. A common case is a feature that is intentionally scoped to roots whose `modelElement` is the default `$root` and is not meant to operate on roots configured with a custom `modelElement`. Such a feature may register its schema only against `$root` on purpose:
+
+```ts
+// eslint-disable-next-line ckeditor5-rules/no-literal-dollar-root -- feature is registered only on the default `$root` by design
+model.schema.register( 'myFeatureElement', { isBlock: true, allowIn: '$root' } );
+```
+
+### Require explicit schema context: `ckeditor5-rules/require-explicit-data-context`
+
+This rule flags calls to engine APIs whose schema-context argument silently defaults to `'$root'` when omitted. Like the rule above, the silent default is wrong as soon as a root is configured with a custom {@link module:core/editor/editorconfig~RootConfig#modelElement `modelElement`}, and the failure is hard to diagnose because no error is raised.
+
+The rule reports calls to these APIs when their context argument is missing:
+
+* {@link module:engine/controller/datacontroller~DataController#parse `data.parse( data, context )`}
+* {@link module:engine/controller/datacontroller~DataController#toModel `data.toModel( view, context )`}
+* {@link module:engine/model/document~ModelDocument#createRoot `document.createRoot( elementName, rootName )`}
+* {@link module:engine/model/writer~ModelWriter#addRoot `writer.addRoot( rootName, elementName )`}
+* {@link module:engine/conversion/upcastdispatcher~UpcastDispatcher#convert `upcastDispatcher.convert( viewElementOrFragment, writer, context )`}
+
+The receiver patterns are matched syntactically (the receiver's final accessed property must be `data` / `document` / `upcastDispatcher`, or a bare identifier `writer` for `addRoot`). This intentionally excludes `MultiRootEditor#addRoot( rootName, options? )`, which has a different signature and resolves the model element name from its options object.
+
+👎&nbsp; Examples of incorrect code for this rule:
+
+```ts
+const fragment = editor.data.parse( html );
+const fragment = editor.data.toModel( view );
+
+editor.model.document.createRoot();
+
+editor.model.change( writer => {
+	writer.addRoot( 'main' );
+} );
+
+editor.data.upcastDispatcher.convert( viewFragment, writer );
+```
+
+👍&nbsp; Examples of correct code for this rule:
+
+```ts
+const fragment = editor.data.parse( html, '$documentFragment' );
+const fragment = editor.data.toModel( view, editor.model.document.getRoot()! );
+
+editor.model.document.createRoot( '$inlineRoot' );
+
+editor.model.change( writer => {
+	writer.addRoot( 'main', '$inlineRoot' );
+} );
+
+editor.data.upcastDispatcher.convert( viewFragment, writer, [ '$root' ] );
+```
+
+If the default `'$root'` context is intentional (for example, an internal editor whose only root always uses the default model element), opt out with an `// eslint-disable-next-line` comment that explains why.
+
+## CKEditor&nbsp;5 custom CSS ESLint rules
+
+In addition to the rules provided by ESLint and its CSS plugin, CKEditor&nbsp;5 uses a few custom CSS rules described below.
 
 ### Names of CSS variables within `.ck-content`: `ckeditor5-rules/ck-content-variable-name`
 

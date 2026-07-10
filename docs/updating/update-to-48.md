@@ -3,7 +3,7 @@ category: update-guides
 meta-title: Update to version 48.x | CKEditor 5 Documentation
 menu-title: Update to v48.x
 order: 76
-modified_at: 2026-03-30
+modified_at: 2026-06-30
 ---
 
 # Update to CKEditor&nbsp;5 v48.x
@@ -13,6 +13,181 @@ modified_at: 2026-03-30
 
 	You may try removing the `package-lock.json` or `yarn.lock` files (if applicable) and reinstalling all packages before rebuilding the editor. For optimal results, ensure you use the most recent package versions.
 </info-box>
+
+## Update to CKEditor&nbsp;5 v48.3.0
+
+Released on 1 July, 2026. ([See full release notes](https://github.com/ckeditor/ckeditor5/releases/tag/v48.3.0))
+
+This release expands the programmatic APIs for CKEditor AI, lets you mark AI-generated suggestions in track changes, and promotes multi-root and multiple editor support for CKEditor AI to stable.
+
+### Programmatic API for CKEditor AI (⭐)
+
+Until now, using {@link features/ckeditor-ai-overview CKEditor AI} meant mainly going through its built-in UI. This release extends the programmatic APIs and opens the door to more custom AI workflows. You can trigger AI from your own buttons, process documents automatically in the background, or run AI server-side with no editor interface at all using the {@link features/ckeditor-ai-programmatic#server-side-editor-api Server-side Editor API}.
+
+* **{@link features/ckeditor-ai-programmatic#document-processing AI Document Processing}** &ndash; run any custom, document-level prompt entirely from code with no UI involved, for automated jobs such as summarizing, reformatting, or enriching content in the background.
+* **{@link features/ckeditor-ai-programmatic#review AI Review}** &ndash; trigger built-in or custom review commands, such as proofreading, clarity, or tone, from code, so you can build automated quality gates into your editing workflow.
+* **{@link features/ckeditor-ai-programmatic#translate AI Translate}** &ndash; translate a document into a target language on demand, with or without the translation UI.
+
+See the {@link features/ckeditor-ai-programmatic Using CKEditor AI programmatically} guide for details.
+
+### AI-generated suggestions in track changes (⭐)
+
+When AI and people edit the same document, reviewers need to know who proposed what. {@link features/ckeditor-ai-generated-suggestions AI-generated suggestions} can now be visually marked, so teams can give machine-proposed changes the right level of scrutiny, keep a clear audit trail of where content came from, and meet editorial or governance policies that require disclosing AI involvement. The feature is opt-in and configured through `config.trackChanges.showAISource` and `config.trackChanges.aiAuthor`.
+
+### Multi-root and multiple editors support for CKEditor AI is now stable (⭐)
+
+Editors that split content into separate areas, such as email layouts, structured documents, or CMS templates with distinct regions, can now use CKEditor AI with full production confidence. The {@link features/ckeditor-ai-multi-root-multi-editor-support multi-root and multiple editor support} introduced as experimental in v48.1.0 is now stable. AI Chat, AI Review, and AI Translate consistently read context from and act on the correct region, and adding or removing editor instances at runtime, including the empty "no editors" state, is handled robustly.
+
+**Migrating from the experimental version:** earlier experimental releases used each root's `label` attribute as the name the AI uses to identify an editing area. This release introduces a dedicated `title` attribute for that purpose, stored on the root and synchronized through real-time collaboration. The AI now reads `title` first and falls back to `label`, and then to the root name. If you set up the experimental multi-root or multiple editor AI support, set `title` on each root through `config.root.title` for single-root editors or `config.roots.<rootName>.title` for multi-root editors, and keep `label` as the accessible `aria-label`. Setups that only set `label` keep working through the fallback, but we recommend setting `title` explicitly. See the {@link features/ckeditor-ai-multi-root-multi-editor-support#configuration configuration section} of the guide for details.
+
+### Other improvements and fixes
+
+* Images are now supported in inline roots. A block image that cannot be placed at a given position (for example, when pasting, dropping, or loading data into an inline root) now degrades to an inline image instead of being dropped.
+* Media embeds now include a keyboard-accessible resize UI: a toolbar dropdown and standalone buttons for predefined sizes, plus a balloon-hosted input for custom widths.
+* This release resolves a range of AI Chat and AI Review issues affecting both reliability and presentation, including suggestions that did not appear or apply, crashes on certain historical or marker-heavy content, and rendering glitches in Safari.
+* Paste from Office no longer produces malformed footnotes when the Footnotes plugin is enabled, and content pasted from Excel Online no longer inserts the clipboard's CSS `<style>` block as visible text.
+* The first footnote reference no longer disappears when the list's starting value is `0` under a numbering style that does not support it, and references stay aligned with the list when using roman numbering at counter values of 4000 or above.
+* The Emoji plugin no longer blocks editor startup, resulting in noticeably faster load times.
+* Comment thread accessible names now include the first comment's text and announce reply counts, and AI-proposed track changes suggestions now state their AI origin in their accessible name.
+* Tapping the type-around buttons that insert a paragraph above or below a selected widget now works on Android and iOS.
+
+### Minor breaking changes in this release
+
+* **[ai](https://www.npmjs.com/package/@ckeditor/ckeditor5-ai)**:
+  * Changed the signature of `AIGateway.apply()`. `applyMethod` is now a property of the second argument (an options object) instead of a positional string: replace `apply( result, 'suggest' )` with `apply( result, { applyMethod: 'suggest' } )`.
+  * Tightened the return types of several AI Chat and AI Review getters and methods to `ReadonlyArray` / `ReadonlyMap`. They now return copies of the original collections to prevent accidental mutation of internal state. Affected: `AIChatContext#getPendingContextItems()`, `AIChatContext#getSentContextItems()`, `AIReviewRunResult#affectedBlocks`, and `AIGateway#mergeChangesIntoContent()`.
+  * The AI Chat balloon width is now declared on the inner `.ck-ai-chat-balloon-main` element instead of `.ck-ai-chat-balloon`. Custom styles that set the AI Chat balloon width by targeting `.ck-ai-chat-balloon` should target `.ck-ai-chat-balloon-main`.
+* **[collaboration-core](https://www.npmjs.com/package/@ckeditor/ckeditor5-collaboration-core)**: Removed the misplaced `affectsData` property from the `CollaborationOperation` interface. The property is specific to `MarkerOperation`. Cast to `MarkerCollaborationOperation` to access it.
+
+## Update to CKEditor&nbsp;5 v48.2.0
+
+Released on 2 June, 2026. ([See full release notes](https://github.com/ckeditor/ckeditor5/releases/tag/v48.2.0))
+
+This release introduces media embed resize and styling, editor roots on paragraph-like elements, skip-level lists, General HTML Support integration with CKEditor AI, and paste and drag-and-drop support in AI Chat.
+
+### Media embed improvements (⭐)
+
+The {@link features/media-embed Media embed} feature now supports resizing via drag handles and alignment with optional text wrapping, letting embedded videos and other media be positioned left, right, or center with surrounding content flowing around them. Style options are available through the new `config.mediaEmbed.styles.options` configuration and inline split-button toolbar entries. See the {@link features/media-embed-resize Media embed resize} and {@link features/media-embed-styles Media embed styles} guides for details.
+
+### Media embed markup changes
+
+As part of the new media embed resize and styling features, the built-in media providers now output a modernized iframe. Previously, each provider used a `padding-bottom` hack on the wrapper `<div>` to maintain the aspect ratio, with the iframe absolutely positioned inside it. The iframe now carries explicit `width` and `height` attributes that act as its intrinsic size (a useful layout hint in containers such as table cells), and relies on the CSS `aspect-ratio` property for responsive sizing. The surrounding `<div>` wrapper is preserved for backward compatibility:
+
+```html
+<!-- Before -->
+<div style="position: relative; padding-bottom: 56.2493%; height: 0;">
+	<iframe src="..." style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></iframe>
+</div>
+
+<!-- After -->
+<div>
+	<iframe src="..." width="1280" height="720" style="width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0; display: block;"></iframe>
+</div>
+```
+
+Because the wrapper `<div>` is still present, custom CSS and queries that target it continue to work, so no changes are required in most cases. However:
+
+* If your custom styles **relied on the previous inline styles** (the wrapper `padding-bottom` aspect-ratio hack or the absolutely positioned iframe), review them against the new `aspect-ratio`-based markup.
+* If you registered **custom media providers** through `config.mediaEmbed.providers` or `config.mediaEmbed.extraProviders`, your existing `html` output keeps working, but we recommend switching to the `aspect-ratio` approach so resizing and styling behave correctly.
+
+### Editor roots on paragraph-like elements (⭐)
+
+Editor roots can now be attached to, or created as, any block-level element other than the default container. The `config.root.element` and `config.roots.<name>.element` options now accept a tag-name string (such as `'h1'`) or a {@link module:core/editor/editorconfig~ViewRootElementDefinition `ViewRootElementDefinition`} object defining the tag name, CSS classes, inline styles, and attributes. The `<textarea>` and `<input>` elements are not supported. {@link module:editor-multi-root/multirooteditor~MultiRootEditor#createEditable `MultiRootEditor#createEditable()`} also accepts a `ViewRootElementDefinition`, and root element definitions are replicated through real-time collaboration. No migration steps are required.
+
+### Skip-level lists
+
+The {@link features/lists-editing#skip-level-lists list feature} now supports skip-level nesting via the new `list.enableSkipLevelLists` configuration option. List items can be indented by more than one level at a time, preserving the structure of documents imported or pasted from Word and other HTML sources that use non-sequential indentation levels.
+
+### General HTML Support in CKEditor AI (⭐)
+
+{@link features/ckeditor-ai-overview CKEditor AI} now works in editors configured with {@link features/general-html-support General HTML Support}. AI Chat, AI Quick Actions, and AI Review can apply and suggest changes on content that uses additional GHS-allowed elements and attributes.
+
+### Paste and drag and drop in AI Chat
+
+The {@link features/ckeditor-ai-chat AI Chat} input now supports pasting and drag and drop. Pasting a bare URL adds it to the conversation context as a link pill, pasting long text attaches it as a `.txt` file, and pasting or dropping images and other supported files adds them as context pills, with a dedicated icon for images.
+
+### Other AI improvements
+
+* **Multi-root and multi-editor support.** The {@link features/ckeditor-ai-multi-root-multi-editor-support multi-root and multiple editor support} introduced as experimental in v48.1.0 is now generally available and supports adding or removing editor instances at runtime.
+* **Default typography for AI Chat responses.** Built-in styles for body text, headings, lists, code, tables, block quotations, and horizontal rules improve readability of generated content.
+* **Resilient streaming.** Streaming replies in AI Chat continue on the server when the page is closed or reloaded and reconnect when the conversation is reopened. Stop generating still cancels the reply.
+* **Programmatic AI Review API.** A new programmatic API for the `AIReview` plugin is documented under {@link features/ckeditor-ai-programmatic Using CKEditor AI programmatically}.
+
+### Other improvements and fixes
+
+* Track Changes integrates with General HTML Support and with media embed resize and style operations: GHS-driven element, class, and inline-style changes are now recorded as suggestions instead of being applied silently.
+* Numbered list autoformat now accepts any starting number — typing `5. ` (or any number followed by `.` or `)` and a space) creates a numbered list. When `list.properties.startIndex` is enabled, the list starts at the typed number.
+* Tables with resized columns now keep their column widths when exported as email.
+* Spotify track embeds use a fixed `80px` height; album and artist embeds keep their responsive aspect ratio.
+* Inline images are no longer allowed in inline-only roots such as `$inlineRoot` and custom inline-only roots.
+
+### Minor breaking changes in this release
+
+* **[ai](https://www.npmjs.com/package/@ckeditor/ckeditor5-ai)**: Changed CKEditor AI APIs used by custom workflows. See the API documentation for details.
+  * Removed methods: `AIChatContext#updateCurrentDocument()` (use `AIChatContext#updateCurrentDocuments()`), `AIEditing#sessionId` (use `AIEditing#getSessionId( editor )`), `AIChatContext#getSourceByDataId()`, `AIChatContext#getDocumentContextSliceByDataId()`.
+  * Removed properties: `AIReply#documentId`, `AIReply#newNodeAnchorIds`, `AIReply#dataIdDocumentSources`.
+  * Modified method signatures: `AIReply#appendContent( content )`, `AIEditing#modelToDataWithIds( modelFragment )`, `AIChatController#addSelectionToChatContext()`, `AIEditing#getSelectionText()`.
+  * Modified property types: `AIReply#content`, `AIReply#parsedContent`, `AIReply#parsedMergedContent`, `AIReply#documentContextContent`.
+
+## Update to CKEditor&nbsp;5 v48.1.1
+
+Released on 18 May, 2026. ([See full release notes](https://github.com/ckeditor/ckeditor5/releases/tag/v48.1.1))
+
+### Dependency security update for real-time collaboration
+
+This release addresses vulnerabilities reported in the [`protobufjs`](https://www.npmjs.com/package/protobufjs) package, which is used inside [`@ckeditor/ckeditor5-operations-compressor`](https://www.npmjs.com/package/@ckeditor/ckeditor5-operations-compressor) for real-time collaboration. Our security analysis confirmed that these vulnerabilities **do not affect** CKEditor&nbsp;5. The bump is published so that integrations using real-time collaboration no longer see noise from third-party security scanners.
+
+This release also includes two small fixes: the AI Review tooltip now appears when hovering over review suggestions, and the spacing of the footnotes list divider is corrected.
+
+## Update to CKEditor&nbsp;5 v48.1.0
+
+Released on 13 May, 2026. ([See full release notes](https://github.com/ckeditor/ckeditor5/releases/tag/v48.1.0))
+
+This release improves AI Chat formatting and rendering, introduces experimental AI support for multi-root and multiple editor setups, and strengthens compatibility with structured content pasted from Office and exported for email.
+
+### AI Chat: better formatting and rendering (⭐)
+
+{@link features/ckeditor-ai-chat AI Chat} now handles raw, unformatted content more reliably. Asking AI Chat to format a pasted transcript, add headings, or convert content into a list produces cleaner and more predictable results.
+
+The AI Chat feed also renders generated content differently. Proposed changes now appear in full when they are ready, while plain assistant text continues to stream at a faster pace.
+
+### Experimental: AI in multi-root and multiple editor setups (⭐)
+
+AI features now {@link features/ckeditor-ai-multi-root-multi-editor-support support multi-root editors and multiple editor instances} that share a {@link module:core/context~Context `Context`}. This helps integrations that use several editor areas on one page, such as a title, body, sidebar, or document sections split into independent roots.
+
+With this release:
+
+* AI Review and AI Translate run across all roots in a multi-root editor and across all editors that share a `Context`. Changes are applied to the related root or editor.
+* AI Chat uses content from the focused root or editor, applies suggestions to the related destination, and keeps separate conversation history for each editor in a `Context`.
+
+This feature is experimental and ready for testing in multi-root and multiple editor integrations.
+
+### AI Chat feed items align to the bottom by default
+
+The AI Chat feed items are now aligned to the bottom of the feed by default. This keeps the most recent messages in view as the conversation grows, in line with common chat interface conventions.
+
+If you want to revert to the previous top-aligned behavior, add the following CSS to your integration:
+
+```css
+.ck.ck-ai-chat__feed__items {
+	margin-top: 0;
+}
+```
+
+### Other improvements and fixes
+
+This release also includes several improvements for content editing, Office content compatibility, and email output:
+
+* Marker boundary elements registered with `markerToElement()` now render in the same order as in the model when two markers meet at the same position. This affects features that rely on markers, including comments, suggestions, mentions, find and replace, and restricted editing.
+* Inline formatting such as bold, italic, font size, font family, font color, and background color is now retained after pressing <kbd>Shift</kbd>+<kbd>Enter</kbd> twice or after deleting all text inside a block and continuing to type.
+* {@link features/source-editing Source editing} now supports native undo and redo keystrokes in the source editing textarea.
+* The editor now handles {@link features/tables#table-alignment alignment attributes} on `<td>` elements that wrap nested tables or images. This improves compatibility with content from Outlook and other sources that use `td[align]` for block layout.
+* Tables now preserve their alignment and inline styles after the {@link features/email#email-specific-style-transformations email export transformation}, improving rendering in Outlook, Gmail, and other major email clients.
+
+### Minor breaking changes in this release
+
+* **[ai](https://www.npmjs.com/package/@ckeditor/ckeditor5-ai)**: The AI Chat feed items are now aligned to the bottom of the feed by default. To revert to the previous top-aligned behavior, override the relevant CSS in your integration.
+* **[ai](https://www.npmjs.com/package/@ckeditor/ckeditor5-ai)**: To reduce visual strain on the user, suggestions proposed by the agent in the AI Chat feed are now always displayed in full when ready (previously streamed word-by-word).
 
 ## Update to CKEditor&nbsp;5 v48.0.0
 
@@ -124,6 +299,8 @@ If your integration reads configuration values directly, update access paths as 
 * `config.get( 'initialData' )` -> `config.get( 'roots.main.initialData' )`
 * `config.get( 'placeholder' )` -> `config.get( 'roots.main.placeholder' )`
 * `config.get( 'label' )` -> `config.get( 'roots.main.label' )`
+
+See the {@link getting-started/setup/root-types Root types} guide for a full overview of root configuration options.
 
 #### Dynamic root management
 

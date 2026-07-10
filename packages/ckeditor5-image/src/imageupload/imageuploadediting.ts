@@ -7,7 +7,7 @@
  * @module image/imageupload/imageuploadediting
  */
 
-import { Plugin, type Editor } from '@ckeditor/ckeditor5-core';
+import { Plugin, type Editor, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 
 import {
 	ViewUpcastWriter,
@@ -22,7 +22,11 @@ import {
 } from '@ckeditor/ckeditor5-engine';
 
 import { Notification } from '@ckeditor/ckeditor5-ui';
-import { ClipboardPipeline, type ViewDocumentClipboardInputEvent } from '@ckeditor/ckeditor5-clipboard';
+import {
+	ClipboardPipeline,
+	type ViewDocumentClipboardInputEvent,
+	type ClipboardInputTransformationEvent
+} from '@ckeditor/ckeditor5-clipboard';
 import { FileRepository, type UploadResponse, type FileLoader } from '@ckeditor/ckeditor5-upload';
 import { env } from '@ckeditor/ckeditor5-utils';
 
@@ -41,8 +45,8 @@ export class ImageUploadEditing extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ FileRepository, Notification, ClipboardPipeline, ImageUtils ] as const;
+	public static get requires(): PluginDependenciesOf<[ FileRepository, Notification, ClipboardPipeline, ImageUtils ]> {
+		return [ FileRepository, Notification, ClipboardPipeline, ImageUtils ];
 	}
 
 	public static get pluginName() {
@@ -130,7 +134,13 @@ export class ImageUploadEditing extends Plugin {
 					return;
 				}
 
-				const [ modelElement ] = Array.from( data.modelRange!.getItems( { shallow: true } ) );
+				// The `<img>` was not converted to a model image element (e.g. an inline root only allows
+				// inline content and the image was not allowed), so there is nothing to set the upload data on.
+				if ( !data.modelRange ) {
+					return;
+				}
+
+				const [ modelElement ] = Array.from( data.modelRange.getItems( { shallow: true } ) );
 				const loader = fileRepository.loaders.get( uploadId as string );
 
 				if ( modelElement ) {
@@ -197,7 +207,7 @@ export class ImageUploadEditing extends Plugin {
 		// For every image file, a new file loader is created and a placeholder image is
 		// inserted into the content. Then, those images are uploaded once they appear in the model
 		// (see Document#change listener below).
-		this.listenTo( clipboardPipeline, 'inputTransformation', ( evt, data ) => {
+		this.listenTo<ClipboardInputTransformationEvent>( clipboardPipeline, 'inputTransformation', ( evt, data ) => {
 			const fetchableImages = Array.from( editor.editing.view.createRangeIn( data.content ) )
 				.map( value => value.item as ViewElement )
 				.filter( viewElement =>

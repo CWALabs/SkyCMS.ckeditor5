@@ -7,7 +7,7 @@
  * @module link/linkui
  */
 
-import { Plugin, type Editor } from '@ckeditor/ckeditor5-core';
+import { Plugin, type Editor, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 import { IconLink, IconPencil, IconUnlink, IconSettings } from '@ckeditor/ckeditor5-icons';
 import {
 	ClickObserver,
@@ -105,8 +105,8 @@ export class LinkUI extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ ContextualBalloon, LinkEditing ] as const;
+	public static get requires(): PluginDependenciesOf<[ ContextualBalloon, LinkEditing ]> {
+		return [ ContextualBalloon, LinkEditing ];
 	}
 
 	/**
@@ -192,7 +192,7 @@ export class LinkUI extends Plugin {
 	public override destroy(): void {
 		super.destroy();
 
-		// Destroy created UI components as they are not automatically destroyed (see ckeditor5#1341).
+		// Destroy created UI components as they are not automatically destroyed (see https://github.com/ckeditor/ckeditor5/issues/1341).
 		if ( this.propertiesView ) {
 			this.propertiesView.destroy();
 		}
@@ -536,6 +536,13 @@ export class LinkUI extends Plugin {
 			} );
 
 			const setHref = ( href: string | undefined ) => {
+				if ( href === '' ) {
+					button.label = t( 'This link has no URL' );
+					button.icon = undefined;
+					button.tooltip = false;
+					return;
+				}
+
 				if ( !href ) {
 					button.label = undefined;
 					button.icon = undefined;
@@ -812,7 +819,7 @@ export class LinkUI extends Plugin {
 
 		this.formView!.disableCssTransitions();
 		this.formView!.resetFormStatus();
-		this.formView!.backButtonView.isVisible = linkCommand.isEnabled && !!linkCommand.value;
+		this.formView!.backButtonView.isVisible = linkCommand.isEnabled && linkCommand.value !== undefined;
 
 		this._balloon.add( {
 			view: this.formView!,

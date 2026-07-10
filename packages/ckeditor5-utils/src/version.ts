@@ -9,16 +9,16 @@
 
 import { CKEditorError } from './ckeditorerror.js';
 
-export const version = '48.0.0';
+export const version = '48.3.0';
 
 // The second argument is not a month. It is `monthIndex` and starts from `0`.
-export const releaseDate = new Date( 2026, 2, 31 );
+export const releaseDate: Date = new Date( 2026, 5, 2 );
 
 declare global {
 	var CKEDITOR_VERSION: string;
 }
 
-/* istanbul ignore next -- @preserve */
+/* v8 ignore next -- @preserve */
 if ( globalThis.CKEDITOR_VERSION ) {
 	/**
 	 * This error is thrown when, due to a mistake in the way CKEditor&nbsp;5 was installed,

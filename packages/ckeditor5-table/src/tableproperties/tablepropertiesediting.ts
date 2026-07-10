@@ -7,7 +7,7 @@
  * @module table/tableproperties/tablepropertiesediting
  */
 
-import { type Editor, Plugin } from '@ckeditor/ckeditor5-core';
+import { type Editor, Plugin, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 import {
 	addBackgroundStylesRules,
 	addBorderStylesRules,
@@ -97,8 +97,8 @@ export class TablePropertiesEditing extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ TableEditing ] as const;
+	public static get requires(): PluginDependenciesOf<[ TableEditing ]> {
+		return [ TableEditing ];
 	}
 
 	/**
@@ -268,7 +268,21 @@ function enableAlignmentProperty( schema: ModelSchema, conversion: Conversion, d
 		allowAttributes: [ 'tableAlignment' ]
 	} );
 
-	schema.setAttributeProperties( 'tableAlignment', { isFormatting: true } );
+	schema.setAttributeProperties( 'tableAlignment', {
+		isFormatting: true,
+		blockAlignment: ( modelElement: ModelElement ) => ( {
+			left: {
+				value: 'blockLeft'
+			},
+			right: {
+				value: 'blockRight'
+			},
+			center: {
+				value: 'center',
+				isDefault: modelElement.getAttribute( 'tableType' ) !== 'layout'
+			}
+		} )
+	} );
 
 	conversion.for( 'downcast' )
 		.attributeToAttribute( {

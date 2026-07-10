@@ -73,13 +73,13 @@ export class ViewContainerElement extends ViewElement {
 ViewContainerElement.prototype.is = function( this: ViewContainerElement, type: string, name?: string ): boolean {
 	if ( !name ) {
 		return type === 'containerElement' || type === 'view:containerElement' ||
-			// From super.is(). This is highly utilised method and cannot call super. See ckeditor/ckeditor5#6529.
+			// From super.is(). This is highly utilised method and cannot call super. See https://github.com/ckeditor/ckeditor5/issues/6529.
 			type === 'element' || type === 'view:element' ||
 			type === 'node' || type === 'view:node';
 	} else {
 		return name === this.name && (
 			type === 'containerElement' || type === 'view:containerElement' ||
-			// From super.is(). This is highly utilised method and cannot call super. See ckeditor/ckeditor5#6529.
+			// From super.is(). This is highly utilised method and cannot call super. See https://github.com/ckeditor/ckeditor5/issues/6529.
 			type === 'element' || type === 'view:element'
 		);
 	}
@@ -92,11 +92,21 @@ ViewContainerElement.prototype.is = function( this: ViewContainerElement, type: 
  */
 export function getViewFillerOffset( this: ViewContainerElement ): number | null {
 	const children = [ ...this.getChildren() ];
-	const lastChild = children[ this.childCount - 1 ];
+	let lastChild: ViewNode | undefined = children[ this.childCount - 1 ];
 
-	// Block filler is required after a `<br>` if it's the last element in its container. See #1422.
+	// Block filler is required after a `<br>` if it's the last element in its container.
+	// See https://github.com/ckeditor/ckeditor5-engine/issues/1422.
 	if ( lastChild && lastChild.is( 'element', 'br' ) ) {
 		return this.childCount;
+	}
+
+	// Check if there is a `<br>` inside an attribute element at the end of container.
+	while ( lastChild && lastChild.is( 'attributeElement' ) ) {
+		lastChild = lastChild.getChild( lastChild.childCount - 1 );
+
+		if ( lastChild && lastChild.is( 'element', 'br' ) ) {
+			return this.childCount;
+		}
 	}
 
 	for ( const child of children ) {

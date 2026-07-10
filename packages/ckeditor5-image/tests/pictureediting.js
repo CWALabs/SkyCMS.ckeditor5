@@ -4,6 +4,7 @@
  */
 
 import { VirtualTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { ItalicEditing } from '@ckeditor/ckeditor5-basic-styles';
 import { Plugin } from '@ckeditor/ckeditor5-core';
@@ -140,6 +141,30 @@ describe( 'PictureEditing', () => {
 							sizes: '400px'
 						}
 					] );
+				} );
+
+				it( 'should not crash when the image cannot be inserted into the current context', () => {
+					// Disallow both image types everywhere, the same way an inline root ($inlineRoot) does for blocks.
+					model.schema.addChildCheck( () => false, 'imageBlock' );
+					model.schema.addChildCheck( () => false, 'imageInline' );
+
+					expect( () => {
+						editor.setData( '<p>foo<picture><img src="/assets/sample.png"></picture>bar</p>' );
+					} ).to.not.throw();
+				} );
+
+				it( 'should not crash when upcasting a picture directly into an inline root that disallows images', () => {
+					// An inline root holds inline content directly (no wrapping block) and here disallows both image
+					// types entirely - the conversion cursor parent is the inline root itself, not a paragraph.
+					model.schema.register( 'restrictedInlineRoot', { allowChildren: '$text', isLimit: true } );
+					model.schema.addChildCheck( () => false, 'imageBlock' );
+					model.schema.addChildCheck( () => false, 'imageInline' );
+
+					const viewFragment = editor.data.processor.toView( '<picture><img src="/assets/sample.png"></picture>' );
+
+					expect( () => {
+						editor.data.toModel( viewFragment, [ 'restrictedInlineRoot' ] );
+					} ).to.not.throw();
 				} );
 
 				it( 'should upcast a plain inline image (random order inside <picture>)', () => {
@@ -628,6 +653,110 @@ describe( 'PictureEditing', () => {
 						'</paragraph>'
 					);
 				} );
+			} );
+		} );
+
+		describe( 'image in an inline root', () => {
+			let inlineEditorElement, inlineEditor, inlineModel;
+
+			beforeEach( async () => {
+				inlineEditorElement = global.document.createElement( 'div' );
+				global.document.body.appendChild( inlineEditorElement );
+
+				inlineEditor = await ClassicTestEditor.create( inlineEditorElement, {
+					plugins: [ Paragraph, PictureEditing, ImageBlockEditing, ImageInlineEditing ],
+					root: { modelElement: '$inlineRoot' }
+				} );
+
+				inlineModel = inlineEditor.model;
+			} );
+
+			afterEach( async () => {
+				await inlineEditor.destroy();
+				inlineEditorElement.remove();
+			} );
+
+			it( 'should upcast a standalone <picture> as an inline image keeping its sources', () => {
+				inlineEditor.setData(
+					'foo<picture>' +
+						'<source srcset="/assets/sample.png" type="image/png" media="(min-width: 800px)" sizes="2000px">' +
+						'<img src="/assets/sample.png">' +
+					'</picture>baz'
+				);
+
+				expect( _getModelData( inlineModel, { withoutSelection: true } ) ).to.equal(
+					'foo<imageInline sources="[object Object]" src="/assets/sample.png"></imageInline>baz'
+				);
+			} );
+
+			it( 'should degrade a block <picture> (in a figure) to an inline image keeping its sources', () => {
+				inlineEditor.setData(
+					'foo<figure class="image"><picture>' +
+						'<source srcset="/assets/sample.png" type="image/png" media="(min-width: 800px)" sizes="2000px">' +
+						'<img src="/assets/sample.png">' +
+					'</picture></figure>baz'
+				);
+
+				expect( _getModelData( inlineModel, { withoutSelection: true } ) ).to.equal(
+					'foo<imageInline sources="[object Object]" src="/assets/sample.png"></imageInline>baz'
+				);
+			} );
+		} );
+
+		describe( 'linked image in an inline root', () => {
+			let inlineEditorElement, inlineEditor, inlineModel;
+
+			beforeEach( async () => {
+				inlineEditorElement = global.document.createElement( 'div' );
+				global.document.body.appendChild( inlineEditorElement );
+
+				inlineEditor = await ClassicTestEditor.create( inlineEditorElement, {
+					plugins: [ Paragraph, PictureEditing, ImageBlockEditing, ImageInlineEditing, LinkImageEditing ],
+					root: { modelElement: '$inlineRoot' }
+				} );
+
+				inlineModel = inlineEditor.model;
+			} );
+
+			afterEach( async () => {
+				await inlineEditor.destroy();
+				inlineEditorElement.remove();
+			} );
+
+			it( 'should upcast a linked inline image keeping its link', () => {
+				inlineEditor.setData( 'foo<a href="https://cksource.com"><img src="/assets/sample.png"></a>baz' );
+
+				expect( _getModelData( inlineModel, { withoutSelection: true } ) ).to.equal(
+					'foo<imageInline linkHref="https://cksource.com" src="/assets/sample.png"></imageInline>baz'
+				);
+			} );
+
+			it( 'should degrade a linked block image (figure > a > img) to an inline image keeping its link', () => {
+				inlineEditor.setData(
+					'foo<figure class="image">' +
+						'<a href="https://cksource.com"><img src="/assets/sample.png"></a>' +
+					'</figure>baz'
+				);
+
+				expect( _getModelData( inlineModel, { withoutSelection: true } ) ).to.equal(
+					'foo<imageInline linkHref="https://cksource.com" src="/assets/sample.png"></imageInline>baz'
+				);
+			} );
+
+			it( 'should degrade a linked block picture (figure > a > picture > img) keeping link and sources', () => {
+				inlineEditor.setData(
+					'foo<figure class="image">' +
+						'<a href="https://cksource.com"><picture>' +
+							'<source srcset="/assets/sample.png" type="image/png" media="(min-width: 800px)" sizes="2000px">' +
+							'<img src="/assets/sample.png">' +
+						'</picture></a>' +
+					'</figure>baz'
+				);
+
+				expect( _getModelData( inlineModel, { withoutSelection: true } ) ).to.equal(
+					'foo<imageInline linkHref="https://cksource.com" ' +
+					'sources="[object Object]" src="/assets/sample.png"></imageInline>baz'
+				);
 			} );
 		} );
 

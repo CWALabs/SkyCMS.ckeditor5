@@ -154,3 +154,27 @@ msgstr ""
 msgctxt "Label for the Back button."
 msgid "Back"
 msgstr ""
+
+msgctxt "The label for the object (e.g. image, media) style button that wraps text around the object."
+msgid "Wrap text"
+msgstr "Абгарнуць тэкст"
+
+msgctxt "The label for the object (e.g. image, media) style button that breaks the text around the object."
+msgid "Break text"
+msgstr "Разрываць тэкст"
+
+msgctxt "The label for the resize option that allows the user to enter a custom size."
+msgid "Custom"
+msgstr "Адмысловы"
+
+msgctxt "The default label for the resize option that resets the size."
+msgid "Original"
+msgstr "Зыходны"
+
+msgctxt "Text used as an error label when the user submitted a custom resize form with a blank value."
+msgid "The value must not be empty."
+msgstr "Значэнне не павінна быць пустым."
+
+msgctxt "Text used as an error label when the user submitted a custom resize form with an incorrect value."
+msgid "The value should be a plain number."
+msgstr "Значэнне павінна быць простым лікам."

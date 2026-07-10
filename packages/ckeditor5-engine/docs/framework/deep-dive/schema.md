@@ -7,15 +7,13 @@ meta-description: Explore the CKEditor 5 schema system, defining document struct
 
 # Schema
 
-This article assumes that you have already read the {@link framework/architecture/editing-engine#schema "Schema"} section of the {@link framework/architecture/editing-engine introduction to the editing engine architecture}.
-
-## Quick recap
-
 The editor's schema is available in the {@link module:engine/model/model~Model#schema `editor.model.schema`} property. It defines allowed model structures (how model elements can be nested), allowed attributes (of both elements and text nodes), and other characteristics (inline vs. block, atomicity in regards of external actions). This information is later used by editing features and the editing engine to decide how to process the model, where to enable features, etc.
 
 Schema rules can be defined by using the {@link module:engine/model/schema~ModelSchema#register `Schema#register()`} or the {@link module:engine/model/schema~ModelSchema#extend `Schema#extend()`} methods. The former can be used only once for a given item name which ensures that only a single editing feature can introduce this item. Similarly, `extend()` can only be used for defined items.
 
 Elements and attributes are checked by features separately by using the {@link module:engine/model/schema~ModelSchema#checkChild `Schema#checkChild()`} and the {@link module:engine/model/schema~ModelSchema#checkAttribute `Schema#checkAttribute()`} methods.
+
+This article assumes that you have already read the {@link framework/architecture/editing-engine#schema "Schema"} section of the {@link framework/architecture/editing-engine introduction to the editing engine architecture}.
 
 ## Defining allowed structures
 
@@ -223,6 +221,15 @@ Here is a table listing various model elements and their properties registered i
 		</tr>
 		<tr>
 			<td><code>$root</code></td>
+			<td>❌</td>
+			<td>✅</td>
+			<td>❌</td>
+			<td>❌</td>
+			<td>❌</td>
+			<td>❌</td>
+		</tr>
+		<tr>
+			<td><code>$inlineRoot</code></td>
 			<td>❌</td>
 			<td>✅</td>
 			<td>❌</td>
@@ -578,10 +585,16 @@ At the same time, elements like paragraphs, list items, or headings **are not** 
 
 ## Generic items
 
-There are several generic items (classes of elements) available: `$root`, `$container`, `$block`, `$blockObject`, `$inlineObject`, and `$text`. They are defined as follows:
+There are several generic items (classes of elements) available: `$root`, `$inlineRoot`, `$container`, `$block`, `$blockObject`, `$inlineObject`, and `$text`. They are defined as follows:
 
 ```js
 schema.register( '$root', {
+	isLimit: true
+} );
+
+schema.register( '$inlineRoot', {
+	allowContentOf: '$block',
+	allowAttributesOf: '$root',
 	isLimit: true
 } );
 
@@ -614,7 +627,11 @@ schema.register( '$text', {
 } );
 ```
 
-These definitions can then be reused by features to create their own definitions in a more extensible way. For example, the {@link module:paragraph/paragraph~Paragraph} feature will define its item as:
+These definitions can then be reused by features to create their own definitions in a more extensible way.
+
+The `$inlineRoot` element is an alternative to `$root` for roots that should only contain inline content (text and inline objects) rather than block content. It inherits attributes from `$root` so that features that set attributes on the root (for example, to track document-level metadata) work the same way regardless of root type. You can use it via the {@link module:core/editor/editorconfig~RootConfig#modelElement `config.root.modelElement`} option.
+
+For example, the {@link module:paragraph/paragraph~Paragraph} feature will define its item as:
 
 ```js
 schema.register( 'paragraph', {
@@ -673,6 +690,11 @@ Relations between generic items (which one can be used where) can be visualized 
 		<$blockObject/>
 	</$container>
 </$root>
+
+<$inlineRoot>				<!-- like $root but for inline content only -->
+	<$text/>
+	<$inlineObject/>
+</$inlineRoot>
 ```
 
 The above rules will be met for instance by such a model content:
@@ -740,6 +762,37 @@ Which, in turn, has these [semantics](#defining-additional-semantics):
 	</blockQuote>
 </$root>
 ```
+
+### Custom root elements
+
+The generic `$root` / `$container` / `$block` chain described above is keyed on the element name `$root`. By default, a root is created as `<$root>`, so every rule of the form `allowIn: '$root'` or `allowAttributesOf: '$root'` applies to it automatically.
+
+You can change the element name used for a root via the {@link module:core/editor/editorconfig~RootConfig#modelElement `config.root.modelElement`} (or `config.roots.<rootName>.modelElement` for the {@link module:editor-multi-root/multirooteditor~MultiRootEditor multi-root editor}) option. When you do, the created root is `<myRoot>` instead of `<$root>`, and **it does not automatically inherit the `$root` chain**. Features that define their elements as `allowIn: '$root'`, `allowContentOf: '$root'`, or `allowAttributesOf: '$root'` will not apply to the custom root unless you opt in.
+
+Declare the custom root in the schema and pick which parts of the `$root` chain you want:
+
+```js
+// Inherit everything $root provides - allowed children, attributes, and is* flags.
+schema.register( 'myRoot', {
+	inheritAllFrom: '$root',
+	allowChildren: [ '$container', '$block' ]
+} );
+
+// Or opt in selectively - e.g. only inherit attributes (the `$inlineRoot` pattern).
+schema.register( 'myInlineRoot', {
+	allowContentOf: '$block',
+	allowAttributesOf: '$root',
+	isLimit: true
+} );
+```
+
+Key rules to remember for custom roots:
+
+* **Block / container content.** If the root should accept the generic block chain, declare `allowChildren: [ '$container', '$block' ]` (or `inheritAllFrom: '$root'`). Otherwise `$block`-based elements like `<paragraph>` and `$container`-based elements like `<blockQuote>` will not be allowed inside it.
+* **Root attributes.** Attributes registered via {@link module:core/editor/editor~Editor#registerRootAttribute `editor.registerRootAttribute()`} are attached only to the `$root` schema element. Custom roots must opt into this chain via `allowAttributesOf: '$root'` to receive them.
+* **Data conversion context.** When calling {@link module:engine/controller/datacontroller~DataController#parse `editor.data.parse()`} or {@link module:engine/controller/datacontroller~DataController#toModel `editor.data.toModel()`} against a custom root, pass the target root element (or its configured model element name) as the `context` argument. The default `'$root'` only matches the generic root and can produce wrong conversion results.
+
+The engine ships with one ready-made custom root definition - `$inlineRoot` - for roots that should only contain inline content. You can use it out of the box via `config.root.modelElement: '$inlineRoot'` without adding your own schema registration.
 
 ## Defining advanced rules using callbacks
 

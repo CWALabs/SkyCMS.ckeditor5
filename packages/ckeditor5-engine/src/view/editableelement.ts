@@ -8,11 +8,14 @@
  */
 
 import { ViewContainerElement } from './containerelement.js';
-import { ObservableMixin } from '@ckeditor/ckeditor5-utils';
+import { ObservableMixin, type ObservableMixinConstructor } from '@ckeditor/ckeditor5-utils';
 import type { ViewSelectionChangeEvent } from './selection.js';
 import type { ViewElementAttributes } from './element.js';
 import { type ViewDocument } from './document.js';
 import { type ViewNode } from './node.js';
+
+const ViewEditableElementBase: ObservableMixinConstructor<typeof ViewContainerElement> =
+	/* #__PURE__ */ ObservableMixin( ViewContainerElement );
 
 /**
  * Editable element which can be a {@link module:engine/view/rooteditableelement~ViewRootEditableElement root}
@@ -23,7 +26,7 @@ import { type ViewNode } from './node.js';
  * The constructor of this class shouldn't be used directly. To create new `ViewEditableElement` use the
  * {@link module:engine/view/downcastwriter~ViewDowncastWriter#createEditableElement `downcastWriter#createEditableElement()`} method.
  */
-export class ViewEditableElement extends /* #__PURE__ */ ObservableMixin( ViewContainerElement ) {
+export class ViewEditableElement extends ViewEditableElementBase {
 	/**
 	 * Whether the editable is in read-write or read-only mode.
 	 *
@@ -114,14 +117,14 @@ export class ViewEditableElement extends /* #__PURE__ */ ObservableMixin( ViewCo
 ViewEditableElement.prototype.is = function( this: ViewEditableElement, type: string, name?: string ): boolean {
 	if ( !name ) {
 		return type === 'editableElement' || type === 'view:editableElement' ||
-			// From super.is(). This is highly utilised method and cannot call super. See ckeditor/ckeditor5#6529.
+			// From super.is(). This is highly utilised method and cannot call super. See https://github.com/ckeditor/ckeditor5/issues/6529.
 			type === 'containerElement' || type === 'view:containerElement' ||
 			type === 'element' || type === 'view:element' ||
 			type === 'node' || type === 'view:node';
 	} else {
 		return name === this.name && (
 			type === 'editableElement' || type === 'view:editableElement' ||
-			// From super.is(). This is highly utilised method and cannot call super. See ckeditor/ckeditor5#6529.
+			// From super.is(). This is highly utilised method and cannot call super. See https://github.com/ckeditor/ckeditor5/issues/6529.
 			type === 'containerElement' || type === 'view:containerElement' ||
 			type === 'element' || type === 'view:element'
 		);

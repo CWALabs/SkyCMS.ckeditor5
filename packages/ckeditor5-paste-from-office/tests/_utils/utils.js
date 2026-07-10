@@ -6,18 +6,12 @@
 import { VirtualTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
 import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import {
-	ViewDocument,
-	HtmlDataProcessor,
 	_setModelData,
 	_stringifyModel,
-	_stringifyView,
-	StylesProcessor
+	_stringifyView
 } from '@ckeditor/ckeditor5-engine';
 
-import { _normalizeClipboardData } from '@ckeditor/ckeditor5-clipboard';
 import { normalizeHtml } from '@ckeditor/ckeditor5-utils/tests/_utils/normalizehtml.js';
-
-const htmlDataProcessor = new HtmlDataProcessor( new ViewDocument( new StylesProcessor() ) );
 
 /**
  * Mocks dataTransfer object which can be used for simulating paste.
@@ -78,6 +72,12 @@ export function generateTests( config ) {
 
 	const groups = groupFixturesByBrowsers( config.browsers, config.input, config.skip, config.fixtures );
 	const generateSuiteFn = config.type === 'normalization' ? generateNormalizationTests : generateIntegrationTests;
+
+	const hasFixtures = Object.values( groups ).some( g => g !== null );
+
+	if ( !hasFixtures ) {
+		return;
+	}
 
 	describe( config.type, () => {
 		describe( config.input, () => {
@@ -156,9 +156,22 @@ function generateNormalizationTests( title, fixtures, editorConfig, skip, only )
 
 		beforeEach( async () => {
 			editor = await VirtualTestEditor.create( await editorConfig() );
+
+			// Stub `editor.editing.view.scrollToTheSelection` as it will fail on VirtualTestEditor without DOM.
+			if ( globalThis.vi ) {
+				globalThis.vi.spyOn( editor.editing.view, 'scrollToTheSelection' ).mockImplementation( () => {} );
+			} else {
+				globalThis.sinon.stub( editor.editing.view, 'scrollToTheSelection' );
+			}
 		} );
 
 		afterEach( async () => {
+			if ( globalThis.vi ) {
+				globalThis.vi.restoreAllMocks();
+			} else {
+				globalThis.sinon.restore();
+			}
+
 			await editor.destroy();
 		} );
 
@@ -174,16 +187,23 @@ function generateNormalizationTests( title, fixtures, editorConfig, skip, only )
 			testRunner( name, () => {
 				// Simulate data from Clipboard event
 				const clipboardPlugin = editor.plugins.get( 'ClipboardPipeline' );
-				const content = htmlDataProcessor.toView( _normalizeClipboardData( fixtures.input[ name ] ) );
 				const dataTransfer = createDataTransfer( {
 					'text/html': fixtures.input[ name ],
 					'text/rtf': fixtures.inputRtf && fixtures.inputRtf[ name ]
 				} );
 
 				// data.content might be completely overwritten with a new object, so we need obtain final result for comparison.
-				const data = { content, dataTransfer };
-				clipboardPlugin.fire( 'inputTransformation', data );
-				const transformedContent = data.content;
+				let inputTransformationData;
+
+				clipboardPlugin.on( 'inputTransformation', ( evt, data ) => {
+					inputTransformationData = data;
+				} );
+
+				const clipboardInputData = { dataTransfer, content: fixtures.input[ name ] };
+
+				editor.editing.view.document.fire( 'clipboardInput', clipboardInputData );
+
+				const transformedContent = inputTransformationData.content;
 
 				expectNormalized(
 					transformedContent,
@@ -205,7 +225,8 @@ function generateIntegrationTests( title, fixtures, editorConfig, skip, only ) {
 		let element, editor;
 		let data = {};
 
-		before( async () => {
+		// `beforeAll` is Vitest's equivalent of Mocha's `before`. Use whichever is available.
+		( globalThis.beforeAll || globalThis.before )( async () => {
 			element = document.createElement( 'div' );
 
 			document.body.appendChild( element );
@@ -221,19 +242,33 @@ function generateIntegrationTests( title, fixtures, editorConfig, skip, only ) {
 
 			data = {};
 
-			sinon.stub( editorModel, 'insertContent' ).callsFake( ( content, selection ) => {
-				// Save model string representation now as it may change after `insertContent()` function call
-				// so accessing it later may not work as it may have emptied/changed structure.
-				data.actual = _stringifyModel( content );
-				insertContent.call( editorModel, content, selection );
-			} );
+			if ( globalThis.vi ) {
+				globalThis.vi.spyOn( editorModel, 'insertContent' ).mockImplementation( ( content, selection ) => {
+					// Save model string representation now as it may change after `insertContent()` function call
+					// so accessing it later may not work as it may have emptied/changed structure.
+					data.actual = _stringifyModel( content );
+					insertContent.call( editorModel, content, selection );
+				} );
+			} else {
+				globalThis.sinon.stub( editorModel, 'insertContent' ).callsFake( ( content, selection ) => {
+					// Save model string representation now as it may change after `insertContent()` function call
+					// so accessing it later may not work as it may have emptied/changed structure.
+					data.actual = _stringifyModel( content );
+					insertContent.call( editorModel, content, selection );
+				} );
+			}
 		} );
 
 		afterEach( () => {
-			sinon.restore();
+			if ( globalThis.vi ) {
+				globalThis.vi.restoreAllMocks();
+			} else {
+				globalThis.sinon.restore();
+			}
 		} );
 
-		after( () => {
+		// `afterAll` is Vitest's equivalent of Mocha's `after`. Use whichever is available.
+		( globalThis.afterAll || globalThis.after )( () => {
 			return editor.destroy()
 				.then( () => {
 					element.remove();
@@ -331,8 +366,8 @@ function compareContentWithBase64Images( actual, expected ) {
 	expect( actualModel.replace( /\u00A0/g, ' ' ) ).to.equalMarkup( expectedModel );
 
 	if ( actualImages.length > 0 && expectedImages.length > 0 ) {
-		expect( actualImages.length ).to.equal( expectedImages.length );
-		expect( actualImages ).to.deep.equal( expectedImages );
+		expect( actualImages.length ).toBe( expectedImages.length );
+		expect( actualImages ).toEqual( expectedImages );
 	}
 }
 

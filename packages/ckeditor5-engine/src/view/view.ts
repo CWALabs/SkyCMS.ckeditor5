@@ -22,6 +22,7 @@ import {
 
 import type { Observer, ObserverConstructor } from './observer/observer.js';
 import type { ViewDocumentSelectionChangeEvent } from './documentselection.js';
+import type { ViewDocumentFragment } from './documentfragment.js';
 import type { StylesProcessor } from './stylesmap.js';
 import { type ViewElement } from './element.js';
 import type { ViewNode, ViewNodeChangeEvent } from './node.js';
@@ -43,7 +44,8 @@ import {
 	ObservableMixin,
 	scrollViewportToShowTarget,
 	type ObservableChangeEvent,
-	type IfTrue
+	type IfTrue,
+	type ObservableMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 import { injectUiElementHandling } from './uielement.js';
 import { injectQuirksHandling } from './filler.js';
@@ -52,6 +54,8 @@ import { cloneDeep } from 'es-toolkit/compat';
 
 // type IfTrue<T> = T extends true ? true : never;
 type DomRange = globalThis.Range;
+
+const EditingViewBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
 
 /**
  * Editor's view controller class. Its main responsibility is DOM - View management for editing purposes, to provide
@@ -86,7 +90,7 @@ type DomRange = globalThis.Range;
  * elements you do not need this controller. You can use the {@link module:engine/view/domconverter~ViewDomConverter ViewDomConverter}
  * instead.
  */
-export class EditingView extends /* #__PURE__ */ ObservableMixin() {
+export class EditingView extends EditingViewBase {
 	/**
 	 * Instance of the {@link module:engine/view/document~ViewDocument} associated with this view controller.
 	 */
@@ -586,7 +590,6 @@ export class EditingView extends /* #__PURE__ */ ObservableMixin() {
 			return callbackResult;
 		} catch ( err: any ) {
 			// @if CK_DEBUG // throw err;
-			/* istanbul ignore next -- @preserve */
 			CKEditorError.rethrowUnexpectedError( err, this );
 		}
 	}
@@ -682,7 +685,7 @@ export class EditingView extends /* #__PURE__ */ ObservableMixin() {
 	 *
 	 * @param element Element which is a parent for the range.
 	 */
-	public createRangeIn( element: ViewElement ): ViewRange {
+	public createRangeIn( element: ViewElement | ViewDocumentFragment ): ViewRange {
 		return ViewRange._createIn( element );
 	}
 

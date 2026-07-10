@@ -17,8 +17,9 @@ import { type MergeOperation } from './operation/mergeoperation.js';
 import { type MoveOperation } from './operation/moveoperation.js';
 import { type Operation } from './operation/operation.js';
 import { type ModelPosition } from './position.js';
+import { EmitterMixin, type EmitterMixinConstructor } from '@ckeditor/ckeditor5-utils';
 
-import { EmitterMixin } from '@ckeditor/ckeditor5-utils';
+const ModelLiveRangeBase: EmitterMixinConstructor<typeof ModelRange> = /* #__PURE__ */ EmitterMixin( ModelRange );
 
 /**
  * `ModelLiveRange` is a type of {@link module:engine/model/range~ModelRange Range}
@@ -29,7 +30,7 @@ import { EmitterMixin } from '@ckeditor/ckeditor5-utils';
  * have to be unbound. Use {@link module:engine/model/liverange~ModelLiveRange#detach detach} whenever you don't need
  * `ModelLiveRange` anymore.
  */
-export class ModelLiveRange extends /* #__PURE__ */ EmitterMixin( ModelRange ) {
+export class ModelLiveRange extends ModelLiveRangeBase {
 	/**
 	 * Creates a live range.
 	 *
@@ -90,7 +91,7 @@ export class ModelLiveRange extends /* #__PURE__ */ EmitterMixin( ModelRange ) {
 // Proper overload would interfere with that.
 ModelLiveRange.prototype.is = function( type: string ): boolean {
 	return type === 'liveRange' || type === 'model:liveRange' ||
-		// From super.is(). This is highly utilised method and cannot call super. See ckeditor/ckeditor5#6529.
+		// From super.is(). This is highly utilised method and cannot call super. See https://github.com/ckeditor/ckeditor5/issues/6529.
 		type == 'range' || type === 'model:range';
 } as any;
 

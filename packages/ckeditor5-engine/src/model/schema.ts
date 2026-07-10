@@ -20,7 +20,14 @@ import { type ModelNode } from './node.js';
 import { type ModelSelection } from './selection.js';
 import { type ModelWriter } from './writer.js';
 
-import { CKEditorError, first, ObservableMixin } from '@ckeditor/ckeditor5-utils';
+import {
+	CKEditorError,
+	first,
+	ObservableMixin,
+	type ObservableMixinConstructor
+} from '@ckeditor/ckeditor5-utils';
+
+const ModelSchemaBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
 
 /**
  * The model's schema. It defines the allowed and disallowed structures of nodes as well as nodes' attributes.
@@ -35,7 +42,7 @@ import { CKEditorError, first, ObservableMixin } from '@ckeditor/ckeditor5-utils
  * {@glink framework/architecture/editing-engine Introduction to the Editing engine architecture} guide.
  * * The {@glink framework/deep-dive/schema Schema deep-dive} guide.
  */
-export class ModelSchema extends /* #__PURE__ */ ObservableMixin() {
+export class ModelSchema extends ModelSchemaBase {
 	private readonly _sourceDefinitions: Record<string, Array<ModelSchemaItemDefinition>> = {};
 
 	/**
@@ -2095,8 +2102,33 @@ export interface ModelAttributeProperties {
 	 */
 	copyFromObject?: boolean;
 
+	/**
+	 * Defines the mapping of all possible block alignments for a specific model element.
+	 * It is used by features that need to determine whether an element can be aligned,
+	 * and apply the alignment if possible.
+	 */
+	blockAlignment?:
+		| ModelBlockAlignmentAttributesMapping
+		| ( ( element: ModelElement ) => ModelBlockAlignmentAttributesMapping );
+
 	[ name: string ]: unknown;
 }
+
+/**
+ * Defines the mapping of block alignment options for a model element attribute.
+ *
+ * Each key represents a logical alignment name (e.g. `'left'`, `'center'`, `'right'`, `'justify'`),
+ * and the corresponding value describes how that alignment is represented in the model — including
+ * the actual attribute value and whether it should be treated as the default alignment for the element.
+ *
+ * Used by features that need to determine whether a model element supports block alignment
+ * and how to apply it. Can be provided as a static object or as a function receiving the element
+ * and returning the mapping dynamically, via {@link ~ModelAttributeProperties#blockAlignment}.
+ */
+export type ModelBlockAlignmentAttributesMapping = Record<string, {
+	isDefault?: boolean;
+	value: string;
+}>;
 
 export type ModelSchemaAttributeCheckCallback = ( context: ModelSchemaContext, attributeName: string ) => boolean | undefined;
 

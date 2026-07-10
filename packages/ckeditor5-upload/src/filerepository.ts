@@ -7,11 +7,7 @@
  * @module upload/filerepository
  */
 
-import {
-	Plugin,
-	PendingActions,
-	type PendingAction
-} from '@ckeditor/ckeditor5-core';
+import { Plugin, PendingActions, type PendingAction, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 
 import {
 	CKEditorError,
@@ -20,18 +16,20 @@ import {
 	logWarning,
 	uid,
 	type ObservableChangeEvent,
-	type CollectionChangeEvent
+	type CollectionChangeEvent,
+	type ObservableMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import { FileReader } from './filereader.js';
+
+const FileLoaderBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
 
 /**
  * File repository plugin. A central point for managing file upload.
  *
  * To use it, first you need an upload adapter. Upload adapter's job is to handle communication with the server
  * (sending the file and handling server's response). You can use one of the existing plugins introducing upload adapters
- * (e.g. {@link module:easy-image/cloudservicesuploadadapter~CloudServicesUploadAdapter} or
- * {@link module:adapter-ckfinder/uploadadapter~CKFinderUploadAdapter}) or write your own one – see
+ * (e.g. {@link module:adapter-ckfinder/uploadadapter~CKFinderUploadAdapter}) or write your own one – see
  * the {@glink framework/deep-dive/upload-adapter Custom image upload adapter deep-dive} guide.
  *
  * Then, you can use {@link module:upload/filerepository~FileRepository#createLoader `createLoader()`} and the returned
@@ -41,7 +39,7 @@ export class FileRepository extends Plugin {
 	/**
 	 * Collection of loaders associated with this repository.
 	 */
-	public loaders = new Collection<FileLoader>();
+	public loaders: Collection<FileLoader> = new Collection<FileLoader>();
 
 	/**
 	 * A factory function which should be defined before using `FileRepository`.
@@ -110,8 +108,8 @@ export class FileRepository extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ PendingActions ] as const;
+	public static get requires(): PluginDependenciesOf<[ PendingActions ]> {
+		return [ PendingActions ];
 	}
 
 	/**
@@ -266,7 +264,7 @@ export class FileRepository extends Plugin {
  *
  * It is used to control the process of reading the file and uploading it using the specified upload adapter.
  */
-class FileLoader extends /* #__PURE__ */ ObservableMixin() {
+class FileLoader extends FileLoaderBase {
 	/**
 	 * Unique id of FileLoader instance.
 	 *
@@ -628,8 +626,7 @@ export interface UploadAdapter {
 	 * ```
 	 *
 	 * NOTE: When returning multiple images, the widest returned one should equal the default one. It is essential to
-	 * correctly set `width` attribute of the image. See this discussion:
-	 * https://github.com/ckeditor/ckeditor5-easy-image/issues/4 for more information.
+	 * correctly set `width` attribute of the image.
 	 *
 	 * Take a look at {@link module:upload/filerepository~UploadAdapter example Adapter implementation} and
 	 * {@link module:upload/filerepository~FileRepository#createUploadAdapter createUploadAdapter method}.

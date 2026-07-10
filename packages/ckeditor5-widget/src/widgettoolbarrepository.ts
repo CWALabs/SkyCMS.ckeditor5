@@ -7,11 +7,7 @@
  * @module widget/widgettoolbarrepository
  */
 
-import {
-	Plugin,
-	type Editor,
-	type ToolbarConfigItem
-} from '@ckeditor/ckeditor5-core';
+import { Plugin, type Editor, type ToolbarConfigItem, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 
 import type { ViewDocumentSelection, ViewElement } from '@ckeditor/ckeditor5-engine';
 
@@ -44,7 +40,7 @@ import { isWidget } from './utils.js';
  *
  * ```ts
  * class ImageToolbar extends Plugin {
- * 	static get requires() {
+ * 	static get requires(): PluginDependenciesOf<[ WidgetToolbarRepository ]> {
  * 		return [ WidgetToolbarRepository ];
  * 	}
  *
@@ -71,8 +67,8 @@ export class WidgetToolbarRepository extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ ContextualBalloon ] as const;
+	public static get requires(): PluginDependenciesOf<[ ContextualBalloon ]> {
+		return [ ContextualBalloon ];
 	}
 
 	/**
@@ -250,7 +246,7 @@ export class WidgetToolbarRepository extends Plugin {
 				// Many toolbars can express willingness to be displayed but they do not know about
 				// each other. Figure out which toolbar is deepest in the view tree to decide which
 				// should be displayed. For instance, if a selected image is inside a table cell, display
-				// the ImageToolbar rather than the TableToolbar (#60).
+				// the ImageToolbar rather than the TableToolbar (https://github.com/ckeditor/ckeditor5-widget/issues/60).
 				if ( relatedElementDepth > maxRelatedElementDepth ) {
 					maxRelatedElementDepth = relatedElementDepth;
 					deepestRelatedElement = relatedElement;

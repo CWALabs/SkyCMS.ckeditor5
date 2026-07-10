@@ -23,7 +23,8 @@ import {
 	type Locale,
 	type LocaleTranslate,
 	type ObservableChangeEvent,
-	type CRCData
+	type CRCData,
+	type ObservableMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import {
@@ -54,6 +55,8 @@ declare global {
 	var CKEDITOR_WARNING_SUPPRESSIONS: Record<string, boolean>;
 }
 
+const EditorBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
+
 /**
  * The class representing a basic, generic editor.
  *
@@ -72,7 +75,7 @@ declare global {
  * the specific editor implements also the {@link ~Editor#ui} property
  * (as most editor implementations do).
  */
-export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
+export abstract class Editor extends EditorBase {
 	/**
 	 * A required name of the editor class. The name should reflect the constructor name.
 	 */
@@ -221,7 +224,7 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 *
 	 * // The default options can be overridden by the configuration passed to create().
 	 * ClassicEditor
-	 * 	.create( sourceElement, { bar: 3 } )
+	 * 	.create( { bar: 3 } )
 	 * 	.then( editor => {
 	 * 		editor.config.get( 'foo' ); // -> 1
 	 * 		editor.config.get( 'bar' ); // -> 3
@@ -255,7 +258,7 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 * 	} );
 	 *
 	 * ClassicEditor
-	 * 	.create( sourceElement, {
+	 * 	.create( {
 	 * 		// Do not initialize these plugins (note: it is defined by a string):
 	 * 		removePlugins: [ 'Foo' ]
 	 * 	} )
@@ -265,7 +268,7 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 * 	} );
 	 *
 	 * ClassicEditor
-	 * 	.create( sourceElement, {
+	 * 	.create( {
 	 * 		// Load only this plugin. It can also be defined by a string if
 	 * 		// this plugin was built into the editor class.
 	 * 		plugins: [ FooPlugin ]
@@ -295,6 +298,13 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 * A set of lock IDs for the {@link #isReadOnly} getter.
 	 */
 	protected readonly _readOnlyLocks: Set<symbol | string>;
+
+	/**
+	 * Holds attributes keys that were passed in
+	 * {@link module:core/editor/editorconfig~EditorConfig#roots `config.roots.<rootName>.modelAttributes`}
+	 *  or {@link module:core/editor/editorconfig~EditorConfig#root `config.root.modelAttributes`}.
+	 */
+	protected readonly _registeredRootsAttributesKeys: Set<string> = new Set<string>();
 
 	/**
 	 * `Editor` class is commonly put in `config.plugins` array.
@@ -822,19 +832,18 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 *
 	 * @returns A promise which resolves once the initialization is completed, providing an array of loaded plugins.
 	 */
-	public initPlugins(): Promise<LoadedPlugins> {
+	public async initPlugins(): Promise<LoadedPlugins> {
 		const config = this.config;
 		const plugins = config.get( 'plugins' )!;
 		const removePlugins = config.get( 'removePlugins' ) || [];
 		const extraPlugins = config.get( 'extraPlugins' ) || [];
 		const substitutePlugins = config.get( 'substitutePlugins' ) || [];
 
-		return this.plugins.init( plugins.concat( extraPlugins ), removePlugins, substitutePlugins )
-			.then( plugins => {
-				checkPluginsAllowedByLicenseKey( this );
+		const loadedPlugins = await this.plugins.init( plugins.concat( extraPlugins ), removePlugins, substitutePlugins );
 
-				return plugins;
-			} );
+		checkPluginsAllowedByLicenseKey( this );
+
+		return loadedPlugins;
 
 		function checkPluginsAllowedByLicenseKey( editor: Editor ): void {
 			const licenseKey = editor.config.get( 'licenseKey' )!;
@@ -879,29 +888,29 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 * @fires destroy
 	 * @returns A promise that resolves once the editor instance is fully destroyed.
 	 */
-	public destroy(): Promise<unknown> {
-		let readyPromise: Promise<unknown> = Promise.resolve();
-
+	public async destroy(): Promise<unknown> {
 		if ( this.state == 'initializing' ) {
-			readyPromise = new Promise( resolve => this.once<EditorReadyEvent>( 'ready', resolve ) );
+			await new Promise( resolve => this.once<EditorReadyEvent>( 'ready', resolve ) );
 		}
 
-		return readyPromise
-			.then( () => {
-				this.fire<EditorDestroyEvent>( 'destroy' );
-				this.stopListening();
-				this.commands.destroy();
-			} )
-			.then( () => this.plugins.destroy() )
-			.then( () => {
-				this.model.destroy();
-				this.data.destroy();
-				this.editing.destroy();
-				this.keystrokes.destroy();
-			} )
-			// Remove the editor from the context.
-			// When the context was created by this editor, the context will be destroyed.
-			.then( () => this._context._removeEditor( this ) );
+		this.fire<EditorDestroyEvent>( 'destroy' );
+		this.stopListening();
+		this.commands.destroy();
+
+		await this.plugins.destroy();
+
+		this.model.destroy();
+		this.data.destroy();
+		this.editing.destroy();
+		this.keystrokes.destroy();
+
+		// Remove the editor from the context.
+		// When the context was created by this editor, the context will be destroyed.
+		await this._context._removeEditor( this );
+
+		// To satisfy the return type and to keep it backward compatible.
+		// eslint-disable-next-line no-useless-return
+		return;
 	}
 
 	/**
@@ -925,7 +934,7 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 			return this.commands.execute( commandName, ...commandParams );
 		} catch ( err: any ) {
 			// @if CK_DEBUG // throw err;
-			/* istanbul ignore next -- @preserve */
+			/* v8 ignore next -- @preserve */
 			CKEditorError.rethrowUnexpectedError( err, this );
 		}
 	}
@@ -943,7 +952,61 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 		this.editing.view.focus();
 	}
 
-	/* istanbul ignore next -- @preserve */
+	/**
+	 * Registers a given string as a root attribute key. Registered root attributes are added to
+	 * the {@link module:engine/model/schema~ModelSchema schema}.
+	 *
+	 * **Note:** Attributes passed in the configuration for multi-root editors
+	 * ({@link module:core/editor/editorconfig~EditorConfig#roots `config.roots.<rootName>.modelAttributes`}) or
+	 * single-root editors ({@link module:core/editor/editorconfig~EditorConfig#root `config.root.modelAttributes`})
+	 * are automatically registered when the editor is initialized. However, registering the same attribute twice
+	 * does not have any negative impact, so it is recommended to use this method in any feature that uses
+	 * root attributes.
+	 *
+	 * **Note:** Registered attributes are attached only to the generic `$root` schema element. A custom root
+	 * {@link module:core/editor/editorconfig~RootConfig#modelElement `modelElement`} must opt into the `$root`
+	 * attribute chain via `allowAttributesOf: '$root'` to inherit these attributes.
+	 * See the {@glink framework/deep-dive/schema#custom-root-elements Custom root elements} section of the
+	 * {@glink framework/deep-dive/schema Schema deep-dive} guide for more details.
+	 */
+	public registerRootAttribute( key: string ): void {
+		if ( this._registeredRootsAttributesKeys.has( key ) ) {
+			return;
+		}
+
+		this._registeredRootsAttributesKeys.add( key );
+		this.editing.model.schema.extend( '$root', { allowAttributes: key } );
+	}
+
+	/**
+	 * Returns attributes for the specified root.
+	 * If no root name is provided, it returns attributes for the 'main' root by default.
+	 *
+	 * Note: all and only {@link ~Editor#registerRootAttribute registered} roots attributes will be returned.
+	 * If a registered root attribute is not set for a given root, `null` will be returned.
+	 */
+	public getRootAttributes( rootName: string = 'main' ): EditorRootAttributes {
+		const root = this.model.document.getRoot( rootName );
+
+		if ( !root ) {
+			/**
+			 * The requested root does not exist. Please ensure that the provided root name
+			 * is correct and that the root has been properly initialized in the document.
+			 *
+			 * @error get-root-attributes-missing-root
+			 */
+			throw new CKEditorError( 'get-root-attributes-missing-root', this, { rootName } );
+		}
+
+		const rootAttributes: EditorRootAttributes = {};
+
+		for ( const key of this._registeredRootsAttributesKeys ) {
+			rootAttributes[ key ] = root.hasAttribute( key ) ? root.getAttribute( key ) : null;
+		}
+
+		return rootAttributes;
+	}
+
 	/**
 	 * Creates and initializes a new editor instance.
 	 *
@@ -965,21 +1028,21 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 	 *
 	 * Exposed as static editor field for easier access in editor builds.
 	 */
-	public static Context = Context;
+	public static Context: typeof Context = Context;
 
 	/**
 	 * The {@link module:watchdog/editorwatchdog~EditorWatchdog} class.
 	 *
 	 * Exposed as static editor field for easier access in editor builds.
 	 */
-	public static EditorWatchdog = EditorWatchdog;
+	public static EditorWatchdog: typeof EditorWatchdog = EditorWatchdog;
 
 	/**
 	 * The {@link module:watchdog/contextwatchdog~ContextWatchdog} class.
 	 *
 	 * Exposed as static editor field for easier access in editor builds.
 	 */
-	public static ContextWatchdog = ContextWatchdog;
+	public static ContextWatchdog: typeof ContextWatchdog = ContextWatchdog;
 
 	protected _showLicenseError( reason: LicenseErrorReason, name?: string ): void {
 		setTimeout( () => {
@@ -1104,6 +1167,7 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 				throw new CKEditorError( 'license-key-usage-limit' );
 			}
 
+			/* v8 ignore else -- @preserve */
 			if ( reason == 'distributionChannel' ) {
 				/**
 				 * Your license does not allow the current distribution channel.
@@ -1132,9 +1196,8 @@ export abstract class Editor extends /* #__PURE__ */ ObservableMixin() {
 				throw new CKEditorError( 'license-key-invalid-distribution-channel' );
 			}
 
-			/* istanbul ignore next -- @preserve */
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const unreachable: never = reason;
+			/* v8 ignore next -- @preserve */
+			const unreachable: never = reason; // eslint-disable-line @typescript-eslint/no-unused-vars
 		}, 0 );
 
 		this._showLicenseError = () => {};
@@ -1254,6 +1317,11 @@ export type EditorDestroyEvent = {
 };
 
 /**
+ * Attributes set on a model root element.
+ */
+export type EditorRootAttributes = Record<string, unknown>;
+
+/**
  * This error is thrown when trying to pass a `<textarea>` element to a `create()` function of an editor class.
  *
  * The only editor type which can be initialized on `<textarea>` elements is
@@ -1280,8 +1348,10 @@ export type EditorDestroyEvent = {
  * In case you intended to use the [LTS Edition](https://ckeditor.com/ckeditor-5-lts/),
  * but have not yet made a purchase, please [contact our sales team](https://ckeditor.com/contact-sales/)
  *
- * If you did not intend to use LTS, please switch to non-LTS edition, for example,
- * the [latest](https://ckeditor.com/docs/ckeditor5/latest/updating/guides/changelog.html) build.
+ * If you did not intend to use LTS, please note that all releases in the v47.7 line are
+ * for LTS subscribers only. To use a non-LTS edition, either upgrade to v48 or newer,
+ * which is our standard [latest](https://ckeditor.com/docs/ckeditor5/latest/updating/guides/changelog.html)
+ * release line, or stay on a version 47.6.2 or earlier.
  *
  * @error license-key-lts-not-allowed
  */

@@ -3,11 +3,11 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import type { HtmlSupportDataSchemaBlockElementDefinition, HtmlSupportDataSchemaInlineElementDefinition } from './dataschema.js';
-
 /**
  * @module html-support/schemadefinitions
  */
+
+import type { HtmlSupportDataSchemaBlockElementDefinition, HtmlSupportDataSchemaInlineElementDefinition } from './dataschema.js';
 
 /**
  * Skipped elements due to HTML deprecation:
@@ -351,14 +351,14 @@ export const defaultConfig = {
 			view: 'form',
 			modelSchema: {
 				inheritAllFrom: '$container',
-				isBlock: true
+				isBlock: false
 			}
 		},
 		{
 			model: 'htmlHgroup',
 			view: 'hgroup',
 			modelSchema: {
-				allowIn: [ '$root', '$container' ],
+				allowWhere: '$container',
 				allowChildren: [
 					'paragraph',
 					'htmlP',
@@ -498,6 +498,7 @@ export const defaultConfig = {
 			modelSchema: {
 				allowWhere: '$container',
 				allowChildren: [ 'htmlDt', 'htmlDd', 'htmlDiv' ],
+				allowAttributesOf: [ '$container' ],
 				isBlock: false
 			}
 		},

@@ -1,14 +1,15 @@
 ---
 menu-title: Default integration
-meta-title: Using CKEditor 5 with React rich text editor componentfrom npm | CKEditor 5 Documentation
+meta-title: Using CKEditor 5 with React rich text editor component from npm | CKEditor 5 Documentation
 meta-description: Install, integrate, and configure CKEditor 5 using the default React component with npm.
 category: react-npm
 order: 10
+modified_at: 2026-05-25
 ---
 
 # Integrating CKEditor&nbsp;5 with React rich text editor component from npm
 
-CKEditor&nbsp;5 has an official React integration that you can use to add a rich text editor to your application. This guide will help you install it and configure to use the npm distribution of the CKEditor&nbsp;5.
+CKEditor&nbsp;5 has an official React integration that you can use to add a rich text editor to your application. It provides a `<CKEditor>` component that you configure with props for the editor build, its configuration, and event handlers. The component works with multiple editor types, including classic, inline, and decoupled (document). For the multi-root editor, use the dedicated {@link getting-started/integrations/react-multiroot-npm multi-root editor hook}. This guide will help you install and configure it to use the npm distribution of CKEditor&nbsp;5.
 
 {@snippet getting-started/use-builder}
 
@@ -219,6 +220,51 @@ function App() {
 
 export default App;
 ```
+
+### Using an inline editor
+
+Single-root editors such as {@link module:editor-inline/inlineeditor~InlineEditor `InlineEditor`}, {@link module:editor-balloon/ballooneditor~BalloonEditor `BalloonEditor`}, and {@link module:editor-decoupled/decouplededitor~DecoupledEditor `DecoupledEditor`} can be configured as inline editors that accept only inline content (text, bold, italic, links) instead of blocks. This is useful for short fields such as titles, captions, or single-line inputs.
+
+Set {@link module:core/editor/editorconfig~RootConfig#modelElement `root.modelElement`} to `'$inlineRoot'` to restrict the root to inline content. Optionally, provide a custom {@link module:core/editor/editorconfig~RootConfig#element `root.element`} to render the editable host as a specific tag (for example, `<h1>` for a title) instead of the default `<div>`.
+
+```jsx
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import { BalloonEditor, Essentials, Bold, Italic } from 'ckeditor5';
+
+import 'ckeditor5/ckeditor5.css';
+
+function App() {
+	return (
+		<CKEditor
+			editor={ BalloonEditor }
+			config={ {
+				licenseKey: '<YOUR_LICENSE_KEY>', // Or 'GPL'.
+				plugins: [ Essentials, Bold, Italic ],
+				toolbar: [ 'bold', 'italic' ],
+				root: {
+					element: 'h1',
+					modelElement: '$inlineRoot',
+					initialData: 'Document title',
+					placeholder: 'Enter title...'
+				}
+			} }
+		/>
+	);
+}
+
+export default App;
+```
+
+The `root.element` property accepts:
+
+* A tag name string, for example `'h1'` or `'section'`.
+* A descriptor object with `name`, `classes`, `styles`, and `attributes` fields.
+
+Without `modelElement: '$inlineRoot'`, only the host tag changes &ndash; the schema still permits blocks inside the root.
+
+<info-box important>
+	The `<CKEditor>` component always renders a `<div>` host for `ClassicEditor`, regardless of `root.element`. Classic editor wraps its toolbar and editable inside its own structure. Use `InlineEditor`, `BalloonEditor`, or `DecoupledEditor` to control the host element.
+</info-box>
 
 ### Using the editor with collaboration plugins
 

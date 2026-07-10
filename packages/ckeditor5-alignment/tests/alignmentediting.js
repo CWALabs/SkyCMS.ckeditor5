@@ -3,6 +3,8 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { AlignmentEditing } from '../src/alignmentediting.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { ImageCaptionEditing } from '@ckeditor/ckeditor5-image';
@@ -30,28 +32,61 @@ describe( 'AlignmentEditing', () => {
 	} );
 
 	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
-		expect( AlignmentEditing.isOfficialPlugin ).to.be.true;
+		expect( AlignmentEditing.isOfficialPlugin ).toBe( true );
 	} );
 
 	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
-		expect( AlignmentEditing.isPremiumPlugin ).to.be.false;
+		expect( AlignmentEditing.isPremiumPlugin ).toBe( false );
 	} );
 
 	it( 'should have pluginName', () => {
-		expect( AlignmentEditing.pluginName ).to.equal( 'AlignmentEditing' );
+		expect( AlignmentEditing.pluginName ).toBe( 'AlignmentEditing' );
 	} );
 
 	it( 'adds alignment command', () => {
-		expect( editor.commands.get( 'alignment' ) ).to.be.instanceOf( AlignmentCommand );
+		expect( editor.commands.get( 'alignment' ) ).toBeInstanceOf( AlignmentCommand );
 	} );
 
 	it( 'allows for alignment in $blocks', () => {
-		expect( model.schema.checkAttribute( [ '$root', '$block' ], 'alignment' ) ).to.be.true;
+		expect( model.schema.checkAttribute( [ '$root', '$block' ], 'alignment' ) ).toBe( true );
 	} );
 
-	it( 'its attribute is marked with a formatting property', () => {
-		expect( model.schema.getAttributeProperties( 'alignment' ) ).to.deep.equal( {
-			isFormatting: true
+	it( 'its attribute is marked with a formatting property with blockAttributes', () => {
+		expect( model.schema.getAttributeProperties( 'alignment' ) ).toEqual( {
+			isFormatting: true,
+			blockAlignment: {
+				left: {
+					value: 'left',
+					isDefault: true
+				},
+				right: { value: 'right' },
+				center: { value: 'center' },
+				justify: { value: 'justify' }
+			}
+		} );
+	} );
+
+	it( 'its attribute is marked with a formatting property with blockAttributes [RTL]', async () => {
+		await editor.destroy();
+
+		editor = await VirtualTestEditor.create( {
+			plugins: [ AlignmentEditing, Paragraph ],
+			language: {
+				content: 'ar'
+			}
+		} );
+
+		expect( editor.model.schema.getAttributeProperties( 'alignment' ) ).toEqual( {
+			isFormatting: true,
+			blockAlignment: {
+				left: { value: 'left' },
+				right: {
+					value: 'right',
+					isDefault: true
+				},
+				center: { value: 'center' },
+				justify: { value: 'justify' }
+			}
 		} );
 	} );
 
@@ -70,22 +105,22 @@ describe( 'AlignmentEditing', () => {
 		} );
 
 		it( 'is allowed on paragraph', () => {
-			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'alignment' ) ).to.be.true;
+			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'alignment' ) ).toBe( true );
 		} );
 
 		it( 'is allowed on paragraph with list attributes', () => {
-			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'listItemId' ) ).to.be.true;
-			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'listIndent' ) ).to.be.true;
-			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'listType' ) ).to.be.true;
-			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'alignment' ) ).to.be.true;
+			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'listItemId' ) ).toBe( true );
+			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'listIndent' ) ).toBe( true );
+			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'listType' ) ).toBe( true );
+			expect( model.schema.checkAttribute( [ '$root', 'paragraph' ], 'alignment' ) ).toBe( true );
 		} );
 
 		it( 'is allowed on heading', () => {
-			expect( model.schema.checkAttribute( [ '$root', 'heading1' ], 'alignment' ) ).to.be.true;
+			expect( model.schema.checkAttribute( [ '$root', 'heading1' ], 'alignment' ) ).toBe( true );
 		} );
 
 		it( 'is disallowed on caption', () => {
-			expect( model.schema.checkAttribute( [ '$root', 'imageBlock', 'caption' ], 'alignment' ) ).to.be.false;
+			expect( model.schema.checkAttribute( [ '$root', 'imageBlock', 'caption' ], 'alignment' ) ).toBe( false );
 		} );
 	} );
 
@@ -96,14 +131,14 @@ describe( 'AlignmentEditing', () => {
 
 				editor.setData( data );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
-				expect( editor.getData() ).to.equal( '<p>x</p>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
+				expect( editor.getData() ).toBe( '<p>x</p>' );
 			} );
 
 			it( 'adds a converter to the view pipeline', () => {
 				_setModelData( model, '<paragraph alignment="left">[]x</paragraph>' );
 
-				expect( editor.getData() ).to.equal( '<p>x</p>' );
+				expect( editor.getData() ).toBe( '<p>x</p>' );
 			} );
 
 			describe( 'className', () => {
@@ -125,7 +160,7 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.setData( data );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
 
 					return newEditor.destroy();
 				} );
@@ -147,12 +182,12 @@ describe( 'AlignmentEditing', () => {
 
 					_setModelData( model, '<paragraph alignment="center">[]x</paragraph>' );
 
-					expect( newEditor.getData() ).to.equal( '<p class="foo-center">x</p>' );
+					expect( newEditor.getData() ).toBe( '<p class="foo-center">x</p>' );
 
 					newEditor.execute( 'alignment', { value: 'left' } );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
-					expect( newEditor.getData() ).to.equal( '<p>x</p>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
+					expect( newEditor.getData() ).toBe( '<p>x</p>' );
 
 					return newEditor.destroy();
 				} );
@@ -173,8 +208,8 @@ describe( 'AlignmentEditing', () => {
 
 				newEditor.setData( data );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph alignment="left">[]x</paragraph>' );
-				expect( newEditor.getData() ).to.equal( '<p style="text-align:left;">x</p>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph alignment="left">[]x</paragraph>' );
+				expect( newEditor.getData() ).toBe( '<p style="text-align:left;">x</p>' );
 
 				return newEditor.destroy();
 			} );
@@ -190,7 +225,7 @@ describe( 'AlignmentEditing', () => {
 				const model = newEditor.model;
 
 				_setModelData( model, '<paragraph alignment="left">[]x</paragraph>' );
-				expect( newEditor.getData() ).to.equal( '<p style="text-align:left;">x</p>' );
+				expect( newEditor.getData() ).toBe( '<p style="text-align:left;">x</p>' );
 
 				return newEditor.destroy();
 			} );
@@ -218,8 +253,8 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.execute( 'alignment', { value: 'left' } );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph alignment="left">[]x</paragraph>' );
-					expect( newEditor.getData() ).to.equal( '<p class="foo-left">x</p>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph alignment="left">[]x</paragraph>' );
+					expect( newEditor.getData() ).toBe( '<p class="foo-left">x</p>' );
 
 					return newEditor.destroy();
 				} );
@@ -245,7 +280,7 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.setData( data );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph alignment="left">[]x</paragraph>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph alignment="left">[]x</paragraph>' );
 
 					return newEditor.destroy();
 				} );
@@ -255,11 +290,11 @@ describe( 'AlignmentEditing', () => {
 		it( 'adds a converter to the view pipeline for removing attribute', () => {
 			_setModelData( model, '<paragraph alignment="center">[]x</paragraph>' );
 
-			expect( editor.getData() ).to.equal( '<p style="text-align:center;">x</p>' );
+			expect( editor.getData() ).toBe( '<p style="text-align:center;">x</p>' );
 
 			editor.execute( 'alignment' );
 
-			expect( editor.getData() ).to.equal( '<p>x</p>' );
+			expect( editor.getData() ).toBe( '<p>x</p>' );
 		} );
 	} );
 
@@ -269,24 +304,24 @@ describe( 'AlignmentEditing', () => {
 
 			editor.setData( data );
 
-			expect( _getModelData( model ) ).to.equal( '<paragraph alignment="center">[]x</paragraph>' );
-			expect( editor.getData() ).to.equal( data );
+			expect( _getModelData( model ) ).toBe( '<paragraph alignment="center">[]x</paragraph>' );
+			expect( editor.getData() ).toBe( data );
 		} );
 
 		it( 'adds a converter to the view pipeline', () => {
 			_setModelData( model, '<paragraph alignment="center">[]x</paragraph>' );
 
-			expect( editor.getData() ).to.equal( '<p style="text-align:center;">x</p>' );
+			expect( editor.getData() ).toBe( '<p style="text-align:center;">x</p>' );
 		} );
 
 		it( 'adds a converter to the view pipeline for changing attribute', () => {
 			_setModelData( model, '<paragraph alignment="right">[]x</paragraph>' );
 
-			expect( editor.getData() ).to.equal( '<p style="text-align:right;">x</p>' );
+			expect( editor.getData() ).toBe( '<p style="text-align:right;">x</p>' );
 
 			editor.execute( 'alignment', { value: 'center' } );
 
-			expect( editor.getData() ).to.equal( '<p style="text-align:center;">x</p>' );
+			expect( editor.getData() ).toBe( '<p style="text-align:center;">x</p>' );
 		} );
 
 		describe( 'className', () => {
@@ -309,8 +344,8 @@ describe( 'AlignmentEditing', () => {
 
 				newEditor.execute( 'alignment', { value: 'center' } );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph alignment="center">[]x</paragraph>' );
-				expect( newEditor.getData() ).to.equal( '<p class="foo-center">x</p>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph alignment="center">[]x</paragraph>' );
+				expect( newEditor.getData() ).toBe( '<p class="foo-center">x</p>' );
 
 				return newEditor.destroy();
 			} );
@@ -333,7 +368,7 @@ describe( 'AlignmentEditing', () => {
 
 				newEditor.setData( data );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph alignment="center">[]x</paragraph>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph alignment="center">[]x</paragraph>' );
 
 				return newEditor.destroy();
 			} );
@@ -347,14 +382,14 @@ describe( 'AlignmentEditing', () => {
 
 				editor.setData( data );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph alignment="right">[]x</paragraph>' );
-				expect( editor.getData() ).to.equal( data );
+				expect( _getModelData( model ) ).toBe( '<paragraph alignment="right">[]x</paragraph>' );
+				expect( editor.getData() ).toBe( data );
 			} );
 
 			it( 'adds a converter to the view pipeline', () => {
 				_setModelData( model, '<paragraph alignment="right">[]x</paragraph>' );
 
-				expect( editor.getData() ).to.equal( '<p style="text-align:right;">x</p>' );
+				expect( editor.getData() ).toBe( '<p style="text-align:right;">x</p>' );
 			} );
 
 			describe( 'className', () => {
@@ -377,8 +412,8 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.execute( 'alignment', { value: 'right' } );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph alignment="right">[]x</paragraph>' );
-					expect( newEditor.getData() ).to.equal( '<p class="foo-right">x</p>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph alignment="right">[]x</paragraph>' );
+					expect( newEditor.getData() ).toBe( '<p class="foo-right">x</p>' );
 
 					return newEditor.destroy();
 				} );
@@ -401,7 +436,7 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.setData( data );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph alignment="right">[]x</paragraph>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph alignment="right">[]x</paragraph>' );
 
 					return newEditor.destroy();
 				} );
@@ -422,8 +457,8 @@ describe( 'AlignmentEditing', () => {
 
 				newEditor.setData( data );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
-				expect( newEditor.getData() ).to.equal( '<p>x</p>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
+				expect( newEditor.getData() ).toBe( '<p>x</p>' );
 
 				return newEditor.destroy();
 			} );
@@ -439,7 +474,7 @@ describe( 'AlignmentEditing', () => {
 				const model = newEditor.model;
 
 				_setModelData( model, '<paragraph alignment="right">[]x</paragraph>' );
-				expect( newEditor.getData() ).to.equal( '<p>x</p>' );
+				expect( newEditor.getData() ).toBe( '<p>x</p>' );
 
 				return newEditor.destroy();
 			} );
@@ -467,8 +502,8 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.execute( 'alignment', { value: 'right' } );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
-					expect( newEditor.getData() ).to.equal( '<p>x</p>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
+					expect( newEditor.getData() ).toBe( '<p>x</p>' );
 
 					return newEditor.destroy();
 				} );
@@ -494,7 +529,7 @@ describe( 'AlignmentEditing', () => {
 
 					newEditor.setData( data );
 
-					expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
+					expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
 
 					return newEditor.destroy();
 				} );
@@ -508,14 +543,14 @@ describe( 'AlignmentEditing', () => {
 
 			editor.setData( data );
 
-			expect( _getModelData( model ) ).to.equal( '<paragraph alignment="justify">[]x</paragraph>' );
-			expect( editor.getData() ).to.equal( data );
+			expect( _getModelData( model ) ).toBe( '<paragraph alignment="justify">[]x</paragraph>' );
+			expect( editor.getData() ).toBe( data );
 		} );
 
 		it( 'adds a converter to the view pipeline', () => {
 			_setModelData( model, '<paragraph alignment="justify">[]x</paragraph>' );
 
-			expect( editor.getData() ).to.equal( '<p style="text-align:justify;">x</p>' );
+			expect( editor.getData() ).toBe( '<p style="text-align:justify;">x</p>' );
 		} );
 
 		describe( 'className', () => {
@@ -538,8 +573,8 @@ describe( 'AlignmentEditing', () => {
 
 				newEditor.execute( 'alignment', { value: 'justify' } );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph alignment="justify">[]x</paragraph>' );
-				expect( newEditor.getData() ).to.equal( '<p class="foo-justify">x</p>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph alignment="justify">[]x</paragraph>' );
+				expect( newEditor.getData() ).toBe( '<p class="foo-justify">x</p>' );
 
 				return newEditor.destroy();
 			} );
@@ -562,7 +597,7 @@ describe( 'AlignmentEditing', () => {
 
 				newEditor.setData( data );
 
-				expect( _getModelData( model ) ).to.equal( '<paragraph alignment="justify">[]x</paragraph>' );
+				expect( _getModelData( model ) ).toBe( '<paragraph alignment="justify">[]x</paragraph>' );
 
 				return newEditor.destroy();
 			} );
@@ -588,8 +623,8 @@ describe( 'AlignmentEditing', () => {
 				'<p style="text-align:right;">C</p>' +
 				'<p style="text-align:justify;">D</p>';
 
-			expect( _getModelData( model ) ).to.equal( expectedModelData );
-			expect( editor.getData() ).to.equal( expectedData );
+			expect( _getModelData( model ) ).toBe( expectedModelData );
+			expect( editor.getData() ).toBe( expectedData );
 		} );
 
 		it( 'should support allowed `align` values in RTL content', async () => {
@@ -618,8 +653,8 @@ describe( 'AlignmentEditing', () => {
 				'<p>C</p>' +
 				'<p style="text-align:justify;">D</p>';
 
-			expect( _getModelData( model ) ).to.equal( expectedModelData );
-			expect( newEditor.getData() ).to.equal( expectedData );
+			expect( _getModelData( model ) ).toBe( expectedModelData );
+			expect( newEditor.getData() ).toBe( expectedData );
 
 			return newEditor.destroy();
 		} );
@@ -636,8 +671,8 @@ describe( 'AlignmentEditing', () => {
 			const expectedData = '<p>A</p>' +
 				'<p>B</p>';
 
-			expect( _getModelData( model ) ).to.equal( expectedModelData );
-			expect( editor.getData() ).to.equal( expectedData );
+			expect( _getModelData( model ) ).toBe( expectedModelData );
+			expect( editor.getData() ).toBe( expectedData );
 		} );
 	} );
 
@@ -650,13 +685,13 @@ describe( 'AlignmentEditing', () => {
 
 			editor.setData( data );
 
-			expect( _getModelData( model ) ).to.equal( '<paragraph alignment="justify">[]x</paragraph>' );
+			expect( _getModelData( model ) ).toBe( '<paragraph alignment="justify">[]x</paragraph>' );
 
-			expect( editor.getData() ).to.equal( '<p>x</p>' );
+			expect( editor.getData() ).toBe( '<p>x</p>' );
 
 			editor.execute( 'alignment' );
 
-			expect( editor.getData() ).to.equal( '<p>x</p>' );
+			expect( editor.getData() ).toBe( '<p>x</p>' );
 		} );
 	} );
 
@@ -666,8 +701,8 @@ describe( 'AlignmentEditing', () => {
 
 			editor.setData( data );
 
-			expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
-			expect( editor.getData() ).to.equal( '<p>x</p>' );
+			expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
+			expect( editor.getData() ).toBe( '<p>x</p>' );
 		} );
 
 		it( 'should ignore not known style', () => {
@@ -675,8 +710,8 @@ describe( 'AlignmentEditing', () => {
 
 			editor.setData( data );
 
-			expect( _getModelData( model ) ).to.equal( '<paragraph>[]x</paragraph>' );
-			expect( editor.getData() ).to.equal( '<p>x</p>' );
+			expect( _getModelData( model ) ).toBe( '<paragraph>[]x</paragraph>' );
+			expect( editor.getData() ).toBe( '<p>x</p>' );
 		} );
 	} );
 
@@ -684,7 +719,7 @@ describe( 'AlignmentEditing', () => {
 		describe( 'options', () => {
 			describe( 'default value', () => {
 				it( 'should be set', () => {
-					expect( editor.config.get( 'alignment.options' ) ).to.deep.equal(
+					expect( editor.config.get( 'alignment.options' ) ).toEqual(
 						[
 							{ name: 'left' },
 							{ name: 'right' },

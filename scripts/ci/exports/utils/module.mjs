@@ -265,7 +265,8 @@ export class Module {
 							this.declarations.push( Declaration.create( {
 								localName: declarator.id.name,
 								type: 'var',
-								node
+								node,
+								mixinBaseHelperCandidate: isMixinBaseHelperCandidate( declarator )
 							} ) );
 						}
 					} else if ( !path.parentPath.isBlockParent() ) {
@@ -387,6 +388,73 @@ export class Module {
 				else {
 					console.warn( '!!! reference is not an identifier', node.loc.start.line, node.loc.start.column );
 				}
+			}
+		} );
+
+		this._markMixinBaseHelpers();
+	}
+
+	_markMixinBaseHelpers() {
+		for ( const declaration of this.declarations.filter( declaration => declaration.mixinBaseHelperCandidate ) ) {
+			const references = this.declarations
+				.filter( item => item !== declaration )
+				.flatMap( item => item.references )
+				.filter( reference => reference === declaration.localName );
+
+			const extendingClasses = this.declarations
+				.filter( item => item.type === 'class' )
+				.filter( item => item.baseClasses.includes( declaration.localName ) );
+
+			declaration.isMixinBaseHelper = references.length === 1 && extendingClasses.length === 1;
+		}
+	}
+
+	_collectClassRequiresReferences( classPath, declaration, typeParameters ) {
+		for ( const memberPath of classPath.get( 'body.body' ) ) {
+			if ( !memberPath.node.static || !isRequiresClassMember( memberPath.node ) ) {
+				continue;
+			}
+
+			if ( memberPath.isClassMethod() ) {
+				if ( memberPath.node.kind !== 'get' ) {
+					continue;
+				}
+
+				this._collectReferencedIdentifiers( {
+					path: memberPath.get( 'body' ),
+					declaration,
+					typeParameters,
+					localScope: memberPath.scope
+				} );
+			}
+
+			if ( memberPath.isClassProperty() && memberPath.get( 'value' ).node ) {
+				this._collectReferencedIdentifiers( {
+					path: memberPath.get( 'value' ),
+					declaration,
+					typeParameters,
+					localScope: memberPath.scope
+				} );
+			}
+		}
+	}
+
+	_collectReferencedIdentifiers( { path, declaration, typeParameters, localScope } ) {
+		path.traverse( {
+			Identifier: identifierPath => {
+				if ( !identifierPath.isReferencedIdentifier() ) {
+					return;
+				}
+
+				const identifierName = identifierPath.node.name;
+				const binding = identifierPath.scope.getBinding( identifierName );
+
+				// Ignore globals and names scoped inside the current class member.
+				if ( !binding || binding.scope === localScope ) {
+					return;
+				}
+
+				declaration.addReference( identifierName, typeParameters );
 			}
 		} );
 	}
@@ -743,6 +811,32 @@ export class Module {
 
 function normalizeModuleAlias( name ) {
 	return name.replace( /^ckeditor5(?:-collaboration)?\/src\/(.*)\.js$/, '@ckeditor/ckeditor5-$1' );
+}
+
+function isMixinBaseHelperCandidate( declarator ) {
+	if ( declarator.id.type !== 'Identifier' || !declarator.id.name.endsWith( 'Base' ) ) {
+		return false;
+	}
+
+	if ( !declarator.id.typeAnnotation || !declarator.init ) {
+		return false;
+	}
+
+	return isMixinConstructorType( declarator.id.typeAnnotation.typeAnnotation ) && isMixinCall( declarator.init );
+}
+
+function isMixinConstructorType( typeAnnotation ) {
+	if ( typeAnnotation.type !== 'TSTypeReference' || typeAnnotation.typeName.type !== 'Identifier' ) {
+		return false;
+	}
+
+	return typeAnnotation.typeName.name.endsWith( 'MixinConstructor' );
+}
+
+function isMixinCall( node ) {
+	return node.type === 'CallExpression' &&
+		node.callee.type === 'Identifier' &&
+		node.callee.name.endsWith( 'Mixin' );
 }
 
 function isRequiresClassMember( classMemberNode ) {

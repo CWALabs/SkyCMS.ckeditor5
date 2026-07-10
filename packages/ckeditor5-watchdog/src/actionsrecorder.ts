@@ -7,7 +7,7 @@
  * @module watchdog/actionsrecorder
  */
 
-/* istanbul ignore file -- @preserve */
+/* v8 ignore start -- @preserve */
 
 import type {
 	Command,
@@ -45,7 +45,7 @@ import { isPlainObject } from 'es-toolkit/compat';
  *
  * ```ts
  * 	ClassicEditor
- * 		.create( editorElement, {
+ * 		.create( {
  * 			plugins: [ ActionsRecorder, ... ],
  * 			actionsRecorder: {
  * 				maxEntries: 1000, // This is the default value and could be adjusted.
@@ -68,7 +68,7 @@ import { isPlainObject } from 'es-toolkit/compat';
  *
  * ```ts
  * 	ClassicEditor
- * 		.create( editorElement, {
+ * 		.create( {
  * 			plugins: [ ActionsRecorder, ... ],
  * 			actionsRecorder: {
  * 				maxEntries: 50, // This is the batch size.
@@ -595,7 +595,7 @@ interface MethodTap extends Record<string, any> {
  * @param visited Set of already serialized objects to avoid circular references.
  * @returns A JSON-serializable representation of the value.
  */
-export function serializeValue( value: any, visited = new WeakSet() ): any {
+export function serializeValue( value: any, visited: WeakSet<object> = new WeakSet() ): any {
 	if ( !value || [ 'boolean', 'number', 'string' ].includes( typeof value ) ) {
 		return value;
 	}
@@ -784,3 +784,5 @@ function serializeDomEvent( event: Event ): any {
 function isTypeCheckable( value: any ): value is ViewTypeCheckable & ModelTypeCheckable {
 	return value && typeof value.is === 'function';
 }
+
+/* v8 ignore stop -- @preserve */

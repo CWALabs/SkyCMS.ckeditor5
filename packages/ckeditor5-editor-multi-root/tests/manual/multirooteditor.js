@@ -10,13 +10,31 @@ import { Bold, Italic } from '@ckeditor/ckeditor5-basic-styles';
 import { Image, AutoImage, ImageInsert } from '@ckeditor/ckeditor5-image';
 import { LinkImage } from '@ckeditor/ckeditor5-link';
 import { ArticlePluginSet } from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
-import { CKFinderUploadAdapter } from '@ckeditor/ckeditor5-adapter-ckfinder';
-import { CKFinder } from '@ckeditor/ckeditor5-ckfinder';
 
 const roots = {
-	intro: { element: document.querySelector( '#editor-intro' ) },
-	content: { element: document.querySelector( '#editor-content' ) },
-	outro: { element: document.querySelector( '#editor-outro' ) }
+	intro: {
+		element: document.querySelector( '#editor-intro' ),
+		modelElement: '$inlineRoot',
+		placeholder: 'Type intro',
+		modelAttributes: {
+			section: 'intro'
+		}
+	},
+	content: {
+		element: document.querySelector( '#editor-content' ),
+		modelAttributes: {
+			section: 'content'
+		},
+		placeholder: 'Type content'
+	},
+	outro: {
+		element: document.querySelector( '#editor-outro' ),
+		modelElement: '$inlineRoot',
+		placeholder: 'Type outro',
+		modelAttributes: {
+			section: 'outro'
+		}
+	}
 };
 
 let editor;
@@ -28,7 +46,7 @@ function initEditor() {
 			plugins: [
 				Paragraph, Heading, Bold, Italic,
 				Image, ImageInsert, AutoImage, LinkImage,
-				ArticlePluginSet, CKFinderUploadAdapter, CKFinder
+				ArticlePluginSet
 			],
 			toolbar: [
 				'heading', '|', 'bold', 'italic', 'undo', 'redo', '|',
@@ -40,10 +58,6 @@ function initEditor() {
 					'imageStyle:wrapText', '|', 'toggleImageCaption',
 					'imageTextAlternative'
 				]
-			},
-			ckfinder: {
-				// eslint-disable-next-line @stylistic/max-len
-				uploadUrl: 'https://ckeditor.com/apps/ckfinder/3.5.0/core/connector/php/connector.php?command=QuickUpload&type=Files&responseType=json'
 			}
 		} )
 		.then( newEditor => {

@@ -15,7 +15,7 @@ import type {
 	UpcastElementEvent,
 	ViewElement
 } from '@ckeditor/ckeditor5-engine';
-import { Plugin } from '@ckeditor/ckeditor5-core';
+import { Plugin, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 
 import {
 	updateViewAttributes,
@@ -30,8 +30,8 @@ export class CodeBlockElementSupport extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ DataFilter ] as const;
+	public static get requires(): PluginDependenciesOf<[ DataFilter ]> {
+		return [ DataFilter ];
 	}
 
 	/**
@@ -95,6 +95,12 @@ function viewToModelCodeBlockAttributeConverter( dataFilter: DataFilter ) {
 			const viewPreElement = viewCodeElement.parent;
 
 			if ( !viewPreElement || !viewPreElement.is( 'element', 'pre' ) ) {
+				return;
+			}
+
+			// The `<code>` was not converted to a model `codeBlock` element (e.g. an inline root only allows
+			// inline content), so there is no model range to set the preserved attributes on.
+			if ( !data.modelRange ) {
 				return;
 			}
 

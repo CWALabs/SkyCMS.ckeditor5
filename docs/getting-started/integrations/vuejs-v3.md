@@ -4,11 +4,12 @@ meta-title: Using CKEditor 5 with Vue.js 3+ rich text editor component from npm 
 meta-description: Install, integrate, and configure CKEditor 5 using the Vue.js 3+ component with npm.
 category: self-hosted
 order: 70
+modified_at: 2026-05-25
 ---
 
 # Integrating CKEditor&nbsp;5 with Vue.js 3+ from npm
 
-CKEditor&nbsp;5 has an official Vue integration that you can use to add a rich text editor to your application. This guide will help you install it and configure to use the npm distribution of the CKEditor&nbsp;5.
+CKEditor&nbsp;5 has an official Vue integration that you can use to add a rich text editor to your application. It provides a `<ckeditor>` component with two-way data binding through `v-model`. The component works with multiple editor types, including classic and decoupled (document). This guide will help you install and configure it to use the npm distribution of CKEditor&nbsp;5.
 
 {@snippet getting-started/use-builder}
 
@@ -114,6 +115,10 @@ import { Ckeditor } from '@ckeditor/ckeditor5-vue';
 
 ### `tag-name`
 
+<info-box warning>
+	The `tag-name` directive is deprecated in favor of `config.root.element` (or `config.roots.main.element`). The new configuration option lets you customize the tag name, classes, inline styles, and HTML attributes of the editable element. See the [Using an inline editor](#using-an-inline-editor) section below for details.
+</info-box>
+
 By default, the editor component creates a `<div>` container which is used as an element passed to the editor (for example, {@link module:editor-classic/classiceditorui~ClassicEditorUI#element `ClassicEditor#element`}). The element can be configured, so for example to create a `<textarea>`, use the following directive:
 
 ```vue
@@ -218,7 +223,7 @@ const disabled = ref( true );
 </script>
 ```
 
-### `disableTwoWayDataBinding`
+### `disable-two-way-data-binding`
 
 Allows disabling the two-way data binding mechanism. The default value is `false`.
 
@@ -227,7 +232,66 @@ The reason for introducing this option is performance issues in large documents.
 This option allows the integrator to disable the default behavior and only call the {@link module:core/editor/editor~Editor#getData `editor.getData()`} method on demand, which prevents the slowdowns. You can read more in the [relevant issue](https://github.com/ckeditor/ckeditor5-vue/issues/246).
 
 ```vue
-<ckeditor :editor="editor" :disableTwoWayDataBinding="true" />
+<template>
+	<ckeditor
+		:editor="ClassicEditor"
+		:disable-two-way-data-binding="disableTwoWayDataBinding"
+	/>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { ClassicEditor } from 'ckeditor5';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+
+const disableTwoWayDataBinding = ref( true );
+</script>
+```
+
+### `watchdog-config`
+
+Allows passing a configuration object to the underlying {@link module:watchdog/editorwatchdog~EditorWatchdog `EditorWatchdog`}. By default, the `<ckeditor>` component automatically wraps the editor with a watchdog that detects crashes and restarts the editor to recover lost content. Use this prop to customize the watchdog behavior, such as the number of allowed crashes before the watchdog gives up, or the minimum time between crashes.
+
+```vue
+<template>
+	<ckeditor
+		:editor="ClassicEditor"
+		:watchdog-config="watchdogConfig"
+	/>
+</template>
+
+<script setup>
+import { ClassicEditor } from 'ckeditor5';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+
+const watchdogConfig = {
+	crashNumberLimit: 5,
+	minimumNonErrorTimePeriod: 2000
+};
+</script>
+```
+
+See the {@link module:watchdog/watchdog~WatchdogConfig `WatchdogConfig` API} for the full list of available options.
+
+This prop has no effect when [`disable-watchdog`](#disable-watchdog) is set to `true`.
+
+### `disable-watchdog`
+
+Allows disabling the built-in watchdog. The default value is `false`.
+
+By default, the `<ckeditor>` component wraps the editor with CKEditor&nbsp;5's {@link module:watchdog/editorwatchdog~EditorWatchdog `EditorWatchdog`}, which automatically detects and recovers from editor crashes. Setting `disable-watchdog` to `true` opts out of this behavior - the editor will run without crash recovery.
+
+When the watchdog is disabled, the [`ready`](#ready) and [`destroy`](#destroy) events will each fire at most once during the component's lifetime, and the [`error`](#error) event will never be emitted.
+
+```vue
+<template>
+	<ckeditor :editor="ClassicEditor" :disable-watchdog="true" />
+</template>
+
+<script setup>
+import { ClassicEditor } from 'ckeditor5';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+</script>
 ```
 
 ## Component events
@@ -239,6 +303,10 @@ Corresponds to the {@link module:core/editor/editor~Editor#event:ready `ready`} 
 ```vue
 <ckeditor :editor="editor" @ready="onEditorReady" />
 ```
+
+<info-box note>
+When the watchdog is active (the default), this event can fire **multiple times** during the component's lifetime - once after the initial mount and again after each watchdog-triggered editor restart. If you need one-time initialization logic (for example, inserting a toolbar into the DOM for the Document editor type), make sure your handler is idempotent or guard it with a flag.
+</info-box>
 
 ### `focus`
 
@@ -264,15 +332,57 @@ Corresponds to the {@link module:engine/model/document~ModelDocument#event:chang
 <ckeditor :editor="editor" @input="onEditorInput" />
 ```
 
+### `error`
+
+Fired when an error is detected by the watchdog - either during editor initialization or at runtime.
+
+```vue
+<ckeditor :editor="editor" @error="onEditorError" />
+```
+
+The event handler receives two arguments:
+
+* `error` – the `Error` object describing what went wrong.
+* `details` – an object with the following properties:
+  * `phase: 'initialization' | 'runtime'` – `'initialization'` when the error occurred during `Editor.create()`, or `'runtime'` for errors caught during normal operation.
+  * `causesRestart: boolean` – whether the watchdog will attempt to restart the editor. When `false`, no automatic restart is scheduled (for example, the crash limit was reached, or restarting does not apply to this error).
+
+```vue
+<template>
+	<ckeditor :editor="ClassicEditor" @error="onEditorError" />
+</template>
+
+<script setup>
+import { ClassicEditor } from 'ckeditor5';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+
+function onEditorError( error, { phase, causesRestart } ) {
+	if ( phase === 'runtime' && causesRestart ) {
+		console.warn( 'Editor crashed: the watchdog is restarting it.', error );
+	} else {
+		console.error( 'Editor error: the watchdog will not restart the editor automatically.', error );
+	}
+}
+</script>
+```
+
+This event is not emitted when [`disable-watchdog`](#disable-watchdog) is set to `true`.
+
 ### `destroy`
 
 Corresponds to the {@link module:core/editor/editor~Editor#event:destroy `destroy`} editor event.
 
-**Note:** Because the destruction of the editor is promise–driven, this event can be fired before the actual promise resolves.
-
 ```vue
 <ckeditor :editor="editor" @destroy="onEditorDestroy" />
 ```
+
+<info-box note>
+Because the destruction of the editor is promise–driven, this event can be fired before the actual promise resolves.
+</info-box>
+
+<info-box note>
+When the watchdog is active (the default), this event can fire **multiple times** during the component's lifetime - once for each editor instance destroyed during a watchdog restart. It is **not** fired when the component unmounts before the editor finishes initializing. If you need to react to component unmount, use Vue's `onBeforeUnmount` lifecycle hook instead.
+</info-box>
 
 ## How to?
 
@@ -302,6 +412,47 @@ function onReady( editor )  {
 }
 </script>
 ```
+
+### Using an inline editor
+
+Single-root editors such as {@link module:editor-inline/inlineeditor~InlineEditor `InlineEditor`}, {@link module:editor-balloon/ballooneditor~BalloonEditor `BalloonEditor`}, and {@link module:editor-decoupled/decouplededitor~DecoupledEditor `DecoupledEditor`} can be configured as inline editors that accept only inline content (text, bold, italic, links) instead of blocks. This is useful for short fields such as titles, captions, or single-line inputs.
+
+Set {@link module:core/editor/editorconfig~RootConfig#modelElement `root.modelElement`} to `'$inlineRoot'` to restrict the root to inline content. Optionally, provide a custom {@link module:core/editor/editorconfig~RootConfig#element `root.element`} to render the editable host as a specific tag (for example, `<h1>` for a title) instead of the default `<div>`.
+
+```vue
+<template>
+	<ckeditor :editor="BalloonEditor" :config="config" />
+</template>
+
+<script setup>
+import { BalloonEditor, Essentials, Bold, Italic } from 'ckeditor5';
+
+import 'ckeditor5/ckeditor5.css';
+
+const config = {
+	licenseKey: '<YOUR_LICENSE_KEY>', // Or 'GPL'.
+	plugins: [ Essentials, Bold, Italic ],
+	toolbar: [ 'bold', 'italic' ],
+	root: {
+		element: 'h1',
+		modelElement: '$inlineRoot',
+		initialData: 'Document title',
+		placeholder: 'Enter title...'
+	}
+};
+</script>
+```
+
+The `root.element` property accepts:
+
+* A tag name string, for example `'h1'` or `'section'`.
+* A descriptor object with `name`, `classes`, `styles`, and `attributes` fields.
+
+Without `modelElement: '$inlineRoot'`, only the host tag changes &ndash; the schema still permits blocks inside the root.
+
+<info-box important>
+	The `<ckeditor>` component always renders a `<div>` host for `ClassicEditor`, regardless of `root.element`. Classic editor wraps its toolbar and editable inside its own structure. Use `InlineEditor`, `BalloonEditor`, or `DecoupledEditor` to control the host element.
+</info-box>
 
 ### Using the editor with collaboration plugins
 

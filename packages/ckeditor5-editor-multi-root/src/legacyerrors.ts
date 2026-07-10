@@ -7,16 +7,12 @@
  * @module editor-multi-root/legacyerrors
  */
 
-import { CKEditorError } from '@ckeditor/ckeditor5-utils';
-
-if ( false ) {
-	/**
-	 * Trying to set attributes on a non-existing root.
-	 *
-	 * Roots specified in legacy `config.rootsAttributes` do not match initial editor roots.
-	 * Use `config.roots.<rootName>.modelAttributes` instead.
-	 *
-	 * @error multi-root-editor-root-attributes-no-root
-	 */
-	throw new CKEditorError( 'multi-root-editor-root-attributes-no-root', null );
-}
+/**
+ * Trying to set attributes on a non-existing root.
+ *
+ * Roots specified in legacy `config.rootsAttributes` do not match initial editor roots.
+ * Use `config.roots.<rootName>.modelAttributes` instead.
+ *
+ * @error multi-root-editor-root-attributes-no-root
+ */
+export const MULTI_ROOT_EDITOR_ROOT_ATTRIBUTES_NO_ROOT = 'multi-root-editor-root-attributes-no-root';

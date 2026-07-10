@@ -3,15 +3,15 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { GeneralHtmlSupport } from '../../src/generalhtmlsupport.js';
 
 import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { ListEditing } from '@ckeditor/ckeditor5-list';
-import { TableEditing } from '@ckeditor/ckeditor5-table';
-
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { stubUid } from '@ckeditor/ckeditor5-list/tests/list/_utils/uid.js';
+import { TableEditing } from '@ckeditor/ckeditor5-table';
 
 import { getModelDataWithAttributes } from '../_utils/utils.js';
 import { _getModelData, _setModelData } from '@ckeditor/ckeditor5-engine';
@@ -19,8 +19,6 @@ import { ListElementSupport } from '../../src/integrations/list.js';
 
 describe( 'ListElementSupport', () => {
 	let editor, model, editorElement, dataFilter, dataSchema;
-
-	testUtils.createSinonSandbox();
 
 	beforeEach( async () => {
 		editorElement = document.createElement( 'div' );
@@ -38,21 +36,22 @@ describe( 'ListElementSupport', () => {
 	} );
 
 	afterEach( () => {
+		vi.restoreAllMocks();
 		editorElement.remove();
 
 		return editor.destroy();
 	} );
 
 	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
-		expect( ListElementSupport.isOfficialPlugin ).to.be.true;
+		expect( ListElementSupport.isOfficialPlugin ).toBe( true );
 	} );
 
 	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
-		expect( ListElementSupport.isPremiumPlugin ).to.be.false;
+		expect( ListElementSupport.isPremiumPlugin ).toBe( false );
 	} );
 
 	it( 'should be named', () => {
-		expect( editor.plugins.has( 'ListElementSupport' ) ).to.be.true;
+		expect( editor.plugins.has( 'ListElementSupport' ) ).toBe( true );
 	} );
 
 	it( 'should preserve attributes on lists on conversion', () => {
@@ -67,7 +66,7 @@ describe( 'ListElementSupport', () => {
 
 		editor.setData( expectedHtml );
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal( expectedHtml );
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe( expectedHtml );
 	} );
 
 	it( 'removes list attributes when list is changed to a paragraph', () => {
@@ -85,7 +84,7 @@ describe( 'ListElementSupport', () => {
 
 		editor.commands.get( 'bulletedList' ).execute( { forceValue: false } );
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal( '<p data-foo="bar-p">1.</p>' );
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe( '<p data-foo="bar-p">1.</p>' );
 	} );
 
 	it( 'removes list attributes when list type changed (numbered -> bulleted)', () => {
@@ -103,7 +102,7 @@ describe( 'ListElementSupport', () => {
 
 		editor.commands.get( 'bulletedList' ).execute();
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 			'<ul>' +
 				'<li data-foo="bar-item">' +
 					'<p data-foo="bar-p">1.</p>' +
@@ -127,7 +126,7 @@ describe( 'ListElementSupport', () => {
 
 		editor.commands.get( 'numberedList' ).execute();
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 			'<ol>' +
 				'<li data-foo="bar-item">' +
 					'<p data-foo="bar-p">1.</p>' +
@@ -153,7 +152,7 @@ describe( 'ListElementSupport', () => {
 			writer.setAttribute( 'listType', 'customNumbered', model.document.getRoot().getChild( 0 ) );
 		} );
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 			'<ol data-foo="bar-list">' +
 				'<li data-foo="bar-item">' +
 					'<p data-foo="bar-p">1.</p>' +
@@ -179,7 +178,7 @@ describe( 'ListElementSupport', () => {
 			writer.setAttribute( 'listType', 'customBulleted', model.document.getRoot().getChild( 0 ) );
 		} );
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 			'<ul data-foo="bar-list">' +
 				'<li data-foo="bar-item">' +
 					'<p data-foo="bar-p">1.</p>' +
@@ -207,7 +206,7 @@ describe( 'ListElementSupport', () => {
 
 		editor.commands.get( 'bulletedList' ).execute();
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 			'<ul>' +
 				'<li data-foo="bar-item">' +
 					'<p data-foo="bar-p">1.</p>' +
@@ -235,7 +234,7 @@ describe( 'ListElementSupport', () => {
 
 		editor.commands.get( 'numberedList' ).execute();
 
-		expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+		expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 			'<ol>' +
 				'<li data-foo="bar-item">' +
 					'<p data-foo="bar-p">1.</p>' +
@@ -261,7 +260,7 @@ describe( 'ListElementSupport', () => {
 				{ text: '3.' }
 			] ) );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equalMarkup(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ul data-foo="foo" data-bar="bar">' +
 					'<li>1.</li>' +
 					'<li>2.</li>' +
@@ -277,7 +276,7 @@ describe( 'ListElementSupport', () => {
 				{ text: '3.' }
 			] ) );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equalMarkup(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ul class="foo bar baz">' +
 					'<li>1.</li>' +
 					'<li>2.</li>' +
@@ -293,7 +292,7 @@ describe( 'ListElementSupport', () => {
 				{ text: '3.' }
 			] ) );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equalMarkup(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ol style="background:blue;color:red;">' +
 					'<li>1.</li>' +
 					'<li>2.</li>' +
@@ -309,7 +308,7 @@ describe( 'ListElementSupport', () => {
 				{ text: '3.', attributes: { 'data-bar': 'baz' } }
 			] ) );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equalMarkup(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ul>' +
 					'<li data-foo="foo">1.</li>' +
 					'<li data-foo="bar">2.</li>' +
@@ -325,7 +324,7 @@ describe( 'ListElementSupport', () => {
 				{ text: '3.', classes: [ 'baz' ] }
 			] ) );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equalMarkup(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ol>' +
 					'<li class="foo">1.</li>' +
 					'<li class="foo bar">2.</li>' +
@@ -341,7 +340,7 @@ describe( 'ListElementSupport', () => {
 				{ text: '3.', styles: { background: 'blue', color: 'yellow' } }
 			] ) );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equalMarkup(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ol>' +
 					'<li style="color:red;">1.</li>' +
 					'<li style="color:green;">2.</li>' +
@@ -392,7 +391,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ul data-foo="foo"><li data-bar="A">Foo</li><li data-bar="B">Bar</li></ul>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<paragraph htmlLiAttributes="(1)" htmlUlAttributes="(2)" listIndent="0" listItemId="a00" listType="bulleted">' +
 						'Foo' +
@@ -424,7 +423,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ol class="foo"><li class="bar">Foo</li><li class="baz">Bar</li></ol>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<paragraph htmlLiAttributes="(1)" htmlOlAttributes="(2)" listIndent="0" listItemId="a00" listType="numbered">' +
 						'Foo' +
@@ -456,7 +455,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ol style="background:blue"><li style="color:red">Foo</li><li style="color:green">Bar</li></ol>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<paragraph htmlLiAttributes="(1)" htmlOlAttributes="(2)" listIndent="0" listItemId="a00" listType="numbered">' +
 						'Foo' +
@@ -497,7 +496,7 @@ describe( 'ListElementSupport', () => {
 					'</li>' +
 				'</ul>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<paragraph htmlLiAttributes="(1)" htmlUlAttributes="(2)" listIndent="0" listItemId="a01" listType="bulleted">' +
 						'Foo' +
@@ -552,7 +551,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ul data-foo="foo"><li data-bar="A">Foo<div data-bar="B">Bar</div></li></ul>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<paragraph htmlLiAttributes="(1)" htmlUlAttributes="(2)" listIndent="0" listItemId="a00" listType="bulleted">' +
 						'Foo' +
@@ -582,20 +581,15 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ul data-foo="foo"><li data-bar="A">Foo</li><li data-bar="B">Bar</li></ul>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
-					'<paragraph htmlLiAttributes="(1)" htmlUlAttributes="(2)" listIndent="0" listItemId="a00" listType="bulleted">' +
+					'<paragraph listIndent="0" listItemId="a00" listType="bulleted">' +
 						'Foo' +
 					'</paragraph>' +
-					'<paragraph htmlLiAttributes="(3)" htmlUlAttributes="(4)" listIndent="0" listItemId="a01" listType="bulleted">' +
+					'<paragraph listIndent="0" listItemId="a01" listType="bulleted">' +
 						'Bar' +
 					'</paragraph>',
-				attributes: {
-					1: {},
-					2: {},
-					3: {},
-					4: {}
-				}
+				attributes: {}
 			} );
 		} );
 
@@ -609,20 +603,15 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ol class="foo"><li class="bar">Foo</li><li class="baz">Bar</li></ol>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
-					'<paragraph htmlLiAttributes="(1)" htmlOlAttributes="(2)" listIndent="0" listItemId="a00" listType="numbered">' +
+					'<paragraph listIndent="0" listItemId="a00" listType="numbered">' +
 						'Foo' +
 					'</paragraph>' +
-					'<paragraph htmlLiAttributes="(3)" htmlOlAttributes="(4)" listIndent="0" listItemId="a01" listType="numbered">' +
+					'<paragraph listIndent="0" listItemId="a01" listType="numbered">' +
 						'Bar' +
 					'</paragraph>',
-				attributes: {
-					1: {},
-					2: {},
-					3: {},
-					4: {}
-				}
+				attributes: {}
 			} );
 		} );
 
@@ -636,20 +625,15 @@ describe( 'ListElementSupport', () => {
 
 			editor.setData( '<ol style="background:blue"><li style="color:red">Foo</li><li style="color:green">Bar</li></ol>' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
-					'<paragraph htmlLiAttributes="(1)" htmlOlAttributes="(2)" listIndent="0" listItemId="a00" listType="numbered">' +
+					'<paragraph listIndent="0" listItemId="a00" listType="numbered">' +
 						'Foo' +
 					'</paragraph>' +
-						'<paragraph htmlLiAttributes="(3)" htmlOlAttributes="(4)" listIndent="0" listItemId="a01" listType="numbered">' +
+						'<paragraph listIndent="0" listItemId="a01" listType="numbered">' +
 						'Bar' +
 					'</paragraph>',
-				attributes: {
-					1: {},
-					2: {},
-					3: {},
-					4: {}
-				}
+				attributes: {}
 			} );
 		} );
 
@@ -663,32 +647,113 @@ describe( 'ListElementSupport', () => {
 			// The attributes from the `ul` list should not be applied to the `ol` list.
 			// In that case, the postfixer should not create an additional operation to clean those attributes.
 			for ( const operation of editor.model.document.history.getOperations() ) {
-				expect( operation.type ).to.be.not.equal( 'removeAttribute' );
+				expect( operation.type ).not.toBe( 'removeAttribute' );
 			}
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
-					'<paragraph htmlLiAttributes="(1)" htmlUlAttributes="(2)" listIndent="0" listItemId="a01" listType="bulleted">' +
+					'<paragraph htmlUlAttributes="(1)" listIndent="0" listItemId="a01" listType="bulleted">' +
 					'Foo' +
 					'</paragraph>' +
-					'<paragraph htmlLiAttributes="(3)" htmlOlAttributes="(4)" listIndent="1" listItemId="a00" listType="numbered">' +
+					'<paragraph htmlOlAttributes="(2)" listIndent="1" listItemId="a00" listType="numbered">' +
 					'Bar' +
 					'</paragraph>',
 				attributes: {
-					1: {},
-					2: {
+					1: {
 						attributes: {
 							'data-foo': 'myUl'
 						}
 					},
-					3: {},
-					4: {
+					2: {
 						attributes: {
 							'data-bar': 'myOl'
 						}
 					}
 				}
 			} );
+		} );
+
+		it( 'should not leak ancestor list attributes into a nested list without its own attributes', () => {
+			dataFilter.allowElement( /^(ul|ol)$/ );
+			dataFilter.allowAttributes( { name: /^(ul|ol)$/, attributes: { 'data-foo': true } } );
+
+			editor.setData( '<ul data-foo="myUl"><li>Foo<ol><li>Bar</li></ol></li></ul>' );
+
+			// The inner `<ol>` carries no allowed attributes, so its model item should have no
+			// list-level GHS attribute — and crucially must not inherit the outer `<ul>`'s attribute.
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
+				data:
+					'<paragraph htmlUlAttributes="(1)" listIndent="0" listItemId="a01" listType="bulleted">' +
+					'Foo' +
+					'</paragraph>' +
+					'<paragraph listIndent="1" listItemId="a00" listType="numbered">' +
+					'Bar' +
+					'</paragraph>',
+				attributes: {
+					1: {
+						attributes: {
+							'data-foo': 'myUl'
+						}
+					}
+				}
+			} );
+
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
+				'<ul data-foo="myUl"><li>Foo<ol><li>Bar</li></ol></li></ul>'
+			);
+		} );
+
+		it( 'should use the innermost list attributes when stacked lists collapse to a single item', () => {
+			// Malformed HTML where lists are nested directly without `<li>` between them collapses
+			// to a single model item; the list type comes from the innermost list and the
+			// preserved attributes must come from the same (innermost) list, not the outermost.
+			dataFilter.allowElement( /^(ul|ol)$/ );
+			dataFilter.allowAttributes( { name: /^(ul|ol)$/, classes: true } );
+
+			editor.setData(
+				'<ul class="c2"><ol class="c3"><ul class="c4"><ol class="c5"><li>x</li></ol></ul></ol></ul>'
+			);
+
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
+				data:
+					'<paragraph htmlOlAttributes="(1)" listIndent="0" listItemId="a00" listType="numbered">' +
+					'x' +
+					'</paragraph>',
+				attributes: {
+					1: { classes: [ 'c5' ] }
+				}
+			} );
+		} );
+
+		it( 'should not leak outer attributes when same-type stacked lists collapse and the innermost has no attrs', () => {
+			// Same-type stacking without intervening `<li>` (e.g. `<ul><ul><li>x</li></ul></ul>`)
+			// collapses to a single model item. The innermost still claims the item even when it
+			// has no attrs to set, so the outer's attrs must not be picked up.
+			dataFilter.allowElement( /^ul$/ );
+			dataFilter.allowAttributes( { name: 'ul', classes: true } );
+
+			editor.setData(
+				'<ul class="outer"><ul><li>x</li></ul></ul>'
+			);
+
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
+				data:
+					'<paragraph listIndent="0" listItemId="a00" listType="bulleted">' +
+					'x' +
+					'</paragraph>',
+				attributes: {}
+			} );
+		} );
+
+		it( 'should not crash when an <li> has no <ul>/<ol> ancestor in the view', () => {
+			// Malformed HTML where <li> sits inside a non-list ancestor. The closest-list lookup
+			// walks past the non-list parent and ultimately returns null when nothing matches.
+			dataFilter.allowElement( /^.*$/ );
+			dataFilter.allowAttributes( { name: /^.*$/, attributes: true } );
+
+			expect( () => {
+				editor.setData( '<div><li>x</li></div>' );
+			} ).not.toThrow();
 		} );
 	} );
 
@@ -718,7 +783,7 @@ describe( 'ListElementSupport', () => {
 					paragraph( 'C.', '11', 0, 'bulleted', { 'data-foo': 'B' } )
 				);
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					paragraph( '1.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
 					paragraph( '2.', '02', 0, 'numbered', { 'data-foo': 'A' } ) +
 					paragraph( '3.', '03', 0, 'numbered', { 'data-foo': 'A' } ) +
@@ -746,7 +811,7 @@ describe( 'ListElementSupport', () => {
 					writer.remove( model.document.getRoot().getChild( 2 ) );
 				} );
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					paragraph( '1.', '01', 0, 'bulleted', { 'data-foo': 'A' } ) +
 					paragraph( '2.', '02', 0, 'bulleted', { 'data-foo': 'A' } ) +
 					paragraph( '3.', '03', 0, 'bulleted', { 'data-foo': 'A' } ) +
@@ -769,7 +834,7 @@ describe( 'ListElementSupport', () => {
 					);
 				} );
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					paragraph( '1.', '01', 0, 'bulleted', { 'data-foo': 'A' } ) +
 					paragraph( '2.', '02', 0, 'bulleted', { 'data-foo': 'A' } ) +
 					paragraph( '3.', '03', 0, 'bulleted', { 'data-foo': 'A' } )
@@ -791,7 +856,7 @@ describe( 'ListElementSupport', () => {
 					);
 				} );
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					paragraph( '1.', '01', 0, 'bulleted', { 'data-foo': 'B' } ) +
 					paragraph( '2.', '02', 0, 'bulleted', { 'data-foo': 'B' } ) +
 					paragraph( '3.', '03', 0, 'bulleted', { 'data-foo': 'B' } )
@@ -819,7 +884,7 @@ describe( 'ListElementSupport', () => {
 					liParagraph( 'B3.', '02', 0, 'numbered', { 'data-foo': 'Z' } )
 				);
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					liParagraph( 'A1.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
 					liParagraph( 'A2.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
 					liParagraph( 'A3.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
@@ -844,7 +909,7 @@ describe( 'ListElementSupport', () => {
 					);
 				} );
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					liParagraph( '1.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
 					liParagraph( '2.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
 					liParagraph( '3.', '01', 0, 'numbered', { 'data-foo': 'A' } )
@@ -866,10 +931,30 @@ describe( 'ListElementSupport', () => {
 					);
 				} );
 
-				expect( _getModelData( model, { withoutSelection: true } ) ).to.equal( unquote(
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
 					liParagraph( '1.', '01', 0, 'numbered', { 'data-foo': 'B' } ) +
 					liParagraph( '2.', '01', 0, 'numbered', { 'data-foo': 'B' } ) +
 					liParagraph( '3.', '01', 0, 'numbered', { 'data-foo': 'B' } )
+				) );
+			} );
+
+			it( 'should remove `htmlLiAttributes` from following blocks when the first block of a list item has none', () => {
+				_setModelData( model,
+					liParagraph( '1.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
+					liParagraph( '2.', '01', 0, 'numbered', { 'data-foo': 'A' } ) +
+					liParagraph( '3.', '01', 0, 'numbered', { 'data-foo': 'A' } )
+				);
+
+				// Removing `htmlLiAttributes` from the first block of a multi-block <li> should
+				// propagate the "no attribute" state to the following blocks via the post-fixer.
+				model.change( writer => {
+					writer.removeAttribute( 'htmlLiAttributes', model.document.getRoot().getChild( 0 ) );
+				} );
+
+				expect( _getModelData( model, { withoutSelection: true } ) ).toBe( unquote(
+					'<paragraph listIndent="0" listItemId="01" listType="numbered">1.</paragraph>' +
+					'<paragraph listIndent="0" listItemId="01" listType="numbered">2.</paragraph>' +
+					'<paragraph listIndent="0" listItemId="01" listType="numbered">3.</paragraph>'
 				) );
 			} );
 
@@ -906,7 +991,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.execute( 'indentList' );
 
-			expect( _getModelData( model ) ).to.equal( unquote(
+			expect( _getModelData( model ) ).toBe( unquote(
 				paragraph( '1.', '01', 0, 'numbered', { 'data-foo': 'foo' } ) +
 				paragraph( '1a.', '02', 1, 'bulleted', { 'data-foo': 'bar' } ) +
 				paragraph( '2.', '03', 0, 'numbered', { 'data-foo': 'foo' } ) +
@@ -924,10 +1009,26 @@ describe( 'ListElementSupport', () => {
 
 			editor.execute( 'indentList' );
 
-			expect( _getModelData( model ) ).to.equal( unquote(
+			expect( _getModelData( model ) ).toBe( unquote(
 				paragraph( '1.', '01', 0, 'bulleted', { 'data-foo': 'foo' } ) +
 				paragraph( '[2.', '02', 1, 'bulleted', undefined ) +
 				paragraph( '3.]', '03', 1, 'bulleted', undefined )
+			) );
+		} );
+
+		it( 'should not add empty html*Attributes when indenting an item in a list without attributes', () => {
+			_setModelData( model,
+				paragraph( '1.', '01', 0, 'bulleted', undefined ) +
+				paragraph( '2.[]', '02', 0, 'bulleted', undefined ) +
+				paragraph( '3.', '03', 0, 'bulleted', undefined )
+			);
+
+			editor.execute( 'indentList' );
+
+			expect( _getModelData( model ) ).toBe( unquote(
+				paragraph( '1.', '01', 0, 'bulleted', undefined ) +
+				paragraph( '2.[]', '02', 1, 'bulleted', undefined ) +
+				paragraph( '3.', '03', 0, 'bulleted', undefined )
 			) );
 		} );
 
@@ -942,7 +1043,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.execute( 'indentList' );
 
-			expect( _getModelData( model ) ).to.equal( unquote(
+			expect( _getModelData( model ) ).toBe( unquote(
 				paragraph( '1.', '01', 0, 'bulleted', { 'data-foo': 'foo' } ) +
 				paragraph( '1a.', '02', 1, 'bulleted', { 'data-foo': 'bar' } ) +
 				paragraph( '1b.', '03', 1, 'bulleted', { 'data-foo': 'bar' } ) +
@@ -963,7 +1064,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.execute( 'indentList' );
 
-			expect( _getModelData( model ) ).to.equal( unquote(
+			expect( _getModelData( model ) ).toBe( unquote(
 				paragraph( '1.', '01', 0, 'bulleted', { 'data-foo': 'foo' } ) +
 				paragraph( '1a.', '02', 1, 'bulleted', { 'data-foo': 'bar' } ) +
 				paragraph( '1b.', '03', 1, 'bulleted', { 'data-foo': 'bar' } ) +
@@ -994,7 +1095,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.commands.get( 'numberedList' ).execute( { forceValue: false } );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ol>' +
 					'<li class="background-list-item">1.1</li>' +
 				'</ol>' +
@@ -1024,7 +1125,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.commands.get( 'numberedList' ).execute( { forceValue: false } );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<p>1.1</p>' +
 				'<ol>' +
 					'<li class="background-list-item">1.2</li>' +
@@ -1050,7 +1151,7 @@ describe( 'ListElementSupport', () => {
 			editor.commands.execute( 'indentList' );
 			editor.commands.execute( 'enter' );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.equal(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ul>' +
 					'<li>1.1' +
 						'<ul>' +
@@ -1076,7 +1177,7 @@ describe( 'ListElementSupport', () => {
 
 			editor.commands.execute( 'indentList' );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<paragraph listIndent="0" listItemId="a00" listType="bulleted">' +
 					'1.1' +
@@ -1133,48 +1234,40 @@ describe( 'ListElementSupport', () => {
 				'</ul>'
 			);
 
-			expect( getModelDataWithAttributes( editor.model, { withoutSelection: true } ) ).to.deep.equal( {
+			// Elements after H2 lose their li and ul attributes — known limitation, with little
+			// potential to cause problems. Lists retain their attributes during downcast as long
+			// as the first element in the list has them (like the paragraph before H2 here).
+			expect( getModelDataWithAttributes( editor.model, { withoutSelection: true } ) ).toEqual( {
 				data:
-					'<paragraph htmlLiAttributes="(1)" htmlUlAttributes="(2)" listIndent="0" listItemId="a00" listType="bulleted">' +
+					'<paragraph htmlUlAttributes="(1)" listIndent="0" listItemId="a00" listType="bulleted">' +
 						'a' +
 					'</paragraph>' +
-					'<paragraph htmlLiAttributes="(3)" htmlUlAttributes="(4)" listIndent="0" listItemId="a01" listType="bulleted">' +
+					'<paragraph htmlLiAttributes="(2)" htmlUlAttributes="(3)" listIndent="0" listItemId="a01" listType="bulleted">' +
 						'Paragraph' +
 					'</paragraph>' +
 					'<htmlH2 listIndent="0" listItemId="a01" listType="bulleted">Heading</htmlH2>' +
-					'<paragraph htmlLiAttributes="(5)" listIndent="0" listItemId="a02" listType="bulleted">c</paragraph>' +
-					'<paragraph htmlLiAttributes="(6)" listIndent="0" listItemId="a03" listType="bulleted">d</paragraph>',
+					'<paragraph listIndent="0" listItemId="a02" listType="bulleted">c</paragraph>' +
+					'<paragraph listIndent="0" listItemId="a03" listType="bulleted">d</paragraph>',
 				attributes: {
-					1: {},
-					2: {
+					1: {
 						attributes: {
 							'data-foo': 'data'
 						}
 					},
-					3: {
+					2: {
 						attributes: {
 							'data-foo': 'bar'
 						}
 					},
-					4: {
+					3: {
 						attributes: {
 							'data-foo': 'data'
 						}
-					},
-
-					/**
-					 * Elements after H2 will lose their li and ul attributes, but this is a known
-					 * limitation and has little potential to cause problems. Lists will retain
-					 * their attributes during downcast as long as the first element in the list
-					 * has them, like the paragraph before H2 in this test.
-					 */
-
-					5: {},
-					6: {}
+					}
 				}
 			} );
 
-			expect( editor.getData( { skipListItemIds: true } ) ).to.be.equal(
+			expect( editor.getData( { skipListItemIds: true } ) ).toBe(
 				'<ul data-foo="data">' +
 					'<li>a</li>' +
 					'<li data-foo="bar">' +
@@ -1220,47 +1313,34 @@ describe( 'ListElementSupport', () => {
 				writer.setSelection( model.document.getRoot().getNodeByPath( [ 0, 1, 0 ] ), 0 );
 			} );
 
-			expect( getModelDataWithAttributes( model ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model ) ).toEqual( {
 				data:
 					'<htmlDiv>' +
-						'<paragraph htmlLiAttributes="(1)" htmlOlAttributes="(2)" listIndent="0" listItemId="a00" listType="numbered">' +
+						'<paragraph listIndent="0" listItemId="a00" listType="numbered">' +
 							'foo' +
 						'</paragraph>' +
-						'<htmlDiv htmlLiAttributes="(3)" htmlOlAttributes="(4)" listIndent="0" listItemId="a02" listType="numbered">' +
-							'<paragraph' +
-								' htmlLiAttributes="(5)" htmlOlAttributes="(6)" listIndent="0" listItemId="a01" listType="numbered">' +
+						'<htmlDiv listIndent="0" listItemId="a02" listType="numbered">' +
+							'<paragraph listIndent="0" listItemId="a01" listType="numbered">' +
 								'[]bar' +
 							'</paragraph>' +
 						'</htmlDiv>' +
 					'</htmlDiv>',
-				attributes: {
-					1: {},
-					2: {},
-					3: {},
-					4: {},
-					5: {},
-					6: {}
-				}
+				attributes: {}
 			} );
 
 			editor.editing.view.document.fire( 'delete', { direction: 'backward', preventDefault() {} } );
 
-			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).to.deep.equal( {
+			expect( getModelDataWithAttributes( model, { withoutSelection: true } ) ).toEqual( {
 				data:
 					'<htmlDiv>' +
-						'<paragraph htmlLiAttributes="(1)" htmlOlAttributes="(2)" listIndent="0" listItemId="a00" listType="numbered">' +
+						'<paragraph listIndent="0" listItemId="a00" listType="numbered">' +
 							'foo' +
 						'</paragraph>' +
-						'<htmlDiv htmlLiAttributes="(3)" htmlOlAttributes="(4)" listIndent="0" listItemId="a02" listType="numbered">' +
+						'<htmlDiv listIndent="0" listItemId="a02" listType="numbered">' +
 							'<paragraph>bar</paragraph>' +
 						'</htmlDiv>' +
 					'</htmlDiv>',
-				attributes: {
-					1: {},
-					2: {},
-					3: {},
-					4: {}
-				}
+				attributes: {}
 			} );
 		} );
 
@@ -1296,14 +1376,14 @@ describe( 'ListElementSupport', () => {
 				writer.setSelection( model.document.getRoot().getNodeByPath( [ 1, 0, 0, 0 ] ), 0 );
 			} );
 
-			expect( _getModelData( model ) ).to.equal(
-				'<paragraph htmlLiAttributes="{}" htmlUlAttributes="{}" listIndent="0" listItemId="a01" listType="bulleted">' +
+			expect( _getModelData( model ) ).toBe(
+				'<paragraph listIndent="0" listItemId="a01" listType="bulleted">' +
 					'<htmlCustomElement htmlContent="" htmlElementName="br"></htmlCustomElement> ' +
 				'</paragraph>' +
-				'<table htmlLiAttributes="{}" htmlUlAttributes="{}" listIndent="0" listItemId="a01" listType="bulleted">' +
+				'<table listIndent="0" listItemId="a01" listType="bulleted">' +
 					'<tableRow>' +
 						'<tableCell>' +
-							'<paragraph htmlLiAttributes="{}" htmlUlAttributes="{}" listIndent="0" listItemId="a00" listType="bulleted">' +
+							'<paragraph listIndent="0" listItemId="a00" listType="bulleted">' +
 								'[]' +
 							'</paragraph>' +
 						'</tableCell>' +
@@ -1313,11 +1393,11 @@ describe( 'ListElementSupport', () => {
 
 			editor.editing.view.document.fire( 'enter', { preventDefault() {} } );
 
-			expect( _getModelData( model ) ).to.equal(
-				'<paragraph htmlLiAttributes="{}" htmlUlAttributes="{}" listIndent="0" listItemId="a01" listType="bulleted">' +
+			expect( _getModelData( model ) ).toBe(
+				'<paragraph listIndent="0" listItemId="a01" listType="bulleted">' +
 					'<htmlCustomElement htmlContent="" htmlElementName="br"></htmlCustomElement> ' +
 				'</paragraph>' +
-				'<table htmlLiAttributes="{}" htmlUlAttributes="{}" listIndent="0" listItemId="a01" listType="bulleted">' +
+				'<table listIndent="0" listItemId="a01" listType="bulleted">' +
 					'<tableRow>' +
 						'<tableCell>' +
 							'<paragraph>' +
@@ -1330,14 +1410,82 @@ describe( 'ListElementSupport', () => {
 		} );
 	} );
 
+	describe( 'definition list', () => {
+		beforeEach( () => {
+			dataFilter.allowElement( /^.*$/ );
+			dataFilter.allowAttributes( { name: /^.*$/, attributes: true } );
+			dataFilter.allowAttributes( { name: /^.*$/, classes: true } );
+		} );
+
+		it( 'should be possible to properly upcast definition list inside list item', () => {
+			editor.setData(
+				'<ol>' +
+					'<li>Foo</li>' +
+					'<li>' +
+						'<dl>' +
+							'<dt>Title</dt>' +
+							'<dd>Definition</dd>' +
+						'</dl>' +
+					'</li>' +
+				'</ol>'
+			);
+
+			expect( _getModelData( model, { withoutSelection: true } ) ).toBe(
+				'<paragraph listIndent="0" listItemId="a00" listType="numbered">' +
+					'Foo' +
+				'</paragraph>' +
+				'<htmlDl listIndent="0" listItemId="a01" listType="numbered">' +
+					'<htmlDt>' +
+				    	'<paragraph>Title</paragraph>' +
+				  	'</htmlDt>' +
+					'<htmlDd>' +
+						'<paragraph>Definition</paragraph>' +
+					'</htmlDd>' +
+				'</htmlDl>'
+			);
+		} );
+
+		it( 'should be possible to properly downcast definition list inside list item', () => {
+			editor.setData(
+				'<ol>' +
+					'<li>Foo</li>' +
+					'<li>' +
+						'<dl>' +
+							'<dt>Title</dt>' +
+							'<dd>Definition</dd>' +
+						'</dl>' +
+					'</li>' +
+				'</ol>'
+			);
+
+			expect( editor.getData() ).toBe(
+				'<ol>' +
+					'<li data-list-item-id="a00">Foo</li>' +
+					'<li data-list-item-id="a01">' +
+					'<dl>' +
+						'<dt>' +
+						'<p>Title</p>' +
+						'</dt>' +
+						'<dd>' +
+						'<p>Definition</p>' +
+						'</dd>' +
+					'</dl>' +
+					'</li>' +
+				'</ol>'
+			);
+		} );
+	} );
+
 	function paragraph( text, id, indent, type, listAttributes ) {
 		const attributeName = type === 'bulleted' ?
 			'htmlUlAttributes' :
 			'htmlOlAttributes';
-		const attrs = JSON.stringify( { attributes: listAttributes } ).replaceAll( '"', '&quot;' );
+		const attributePart = listAttributes ?
+			`${ attributeName }="${ JSON.stringify( { attributes: listAttributes } ).replaceAll( '"', '&quot;' ) }" ` :
+			'';
 
 		return (
-			`<paragraph ${ attributeName }="${ attrs }" listIndent="${ indent }" listItemId="${ id }" listType="${ type }">` +
+			`<paragraph ${ attributePart }listIndent="${ indent }" listItemId="${ id }" listType="${ type }">` +
 				text +
 			'</paragraph>'
 		);

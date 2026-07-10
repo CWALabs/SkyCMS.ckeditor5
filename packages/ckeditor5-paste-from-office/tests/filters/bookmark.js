@@ -3,6 +3,7 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { beforeAll } from 'vitest';
 import { transformBookmarks } from '../../src/filters/bookmark.js';
 
 import { HtmlDataProcessor, ViewUpcastWriter, ViewDocument, StylesProcessor } from '@ckeditor/ckeditor5-engine';
@@ -11,7 +12,7 @@ describe( 'PasteFromOffice - filters - bookmark', () => {
 	let writer, viewDocument;
 	const htmlDataProcessor = new HtmlDataProcessor( new ViewDocument( new StylesProcessor() ) );
 
-	before( () => {
+	beforeAll( () => {
 		viewDocument = new ViewDocument();
 		writer = new ViewUpcastWriter( viewDocument );
 	} );
@@ -221,11 +222,51 @@ describe( 'PasteFromOffice - filters - bookmark', () => {
 		);
 	} );
 
+	it( 'should extract text and remove the <a> element completely if its name starts with an underscore (hidden bookmark)', () => {
+		performTest(
+			'<a name="_GoBack">' +
+				'<span>text</span>' +
+			'</a>',
+
+			'<span>text</span>'
+		);
+	} );
+
+	it( 'should completely remove an empty <a> element if its name starts with an underscore', () => {
+		performTest(
+			'<p>paragraph</p>' +
+			'<a name="_Toc12345"></a>',
+
+			'<p>paragraph</p>'
+		);
+	} );
+
+	it( 'should remove the <a> element but keep content when both id and name are present and name starts with an underscore', () => {
+		performTest(
+			'<a id="some-id" name="_hiddenBookmark">' +
+				'<span>text</span>' +
+			'</a>',
+
+			'<span>text</span>'
+		);
+	} );
+
+	it( 'should NOT remove the <a> element if only its id starts with an underscore (since Word/GDocs use name)', () => {
+		performTest(
+			'<a id="_GoBack">' +
+				'<span>text</span>' +
+			'</a>',
+
+			'<a id="_GoBack"></a>' +
+			'<span>text</span>'
+		);
+	} );
+
 	function performTest( inputData, expectedData ) {
 		const documentFragment = htmlDataProcessor.toView( inputData );
 
 		transformBookmarks( documentFragment, writer );
 
-		expect( htmlDataProcessor.toData( documentFragment ) ).to.equal( expectedData );
+		expect( htmlDataProcessor.toData( documentFragment ) ).toBe( expectedData );
 	}
 } );

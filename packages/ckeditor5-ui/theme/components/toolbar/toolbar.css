@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
@@ -47,7 +47,7 @@
 
 	& > .ck-toolbar__items {
 		& > *:not(.ck-toolbar__line-break) {
-			/* (#11) Separate toolbar items. */
+			/* (https://github.com/ckeditor/ckeditor5/issues/11) Separate toolbar items. */
 			margin-right: var(--ck-spacing-small);
 		}
 
@@ -148,7 +148,6 @@
 	}
 }
 
-/* stylelint-disable */
 
 /*
  * Styles for RTL toolbars.
@@ -164,7 +163,7 @@
 	}
 
 	&:not(.ck-toolbar_compact) > .ck-toolbar__items > .ck {
-		/* (#11) Separate toolbar items. */
+		/* (https://github.com/ckeditor/ckeditor5/issues/11) Separate toolbar items. */
 		margin-left: var(--ck-spacing-small);
 	}
 
@@ -235,4 +234,3 @@
 	}
 }
 
-/* stylelint-enable */

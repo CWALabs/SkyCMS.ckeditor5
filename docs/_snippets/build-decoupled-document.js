@@ -18,7 +18,6 @@ import {
 	Underline,
 	BlockQuote,
 	CKBox,
-	EasyImage,
 	Heading,
 	Image,
 	ImageCaption,
@@ -57,7 +56,6 @@ export class DecoupledEditor extends DecoupledEditorBase {
 		BlockQuote,
 		CKBox,
 		CloudServices,
-		EasyImage,
 		Heading,
 		Image,
 		ImageCaption,
@@ -110,6 +108,7 @@ export class DecoupledEditor extends DecoupledEditorBase {
 			]
 		},
 		list: {
+			enableSkipLevelLists: true,
 			properties: {
 				styles: true,
 				startIndex: true,

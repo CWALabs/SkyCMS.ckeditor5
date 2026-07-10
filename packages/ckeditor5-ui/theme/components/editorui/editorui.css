@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
@@ -73,6 +73,16 @@
 	/* https://github.com/ckeditor/ckeditor5/issues/6517 */
 	&.ck-blurred ::selection {
 		background: var(--ck-color-editable-blur-selection);
+	}
+
+	&.ck-editor__editable_inline-root br {
+		/*
+		 * An inline root content is placed directly inside editable element (without blocks)
+		 * and BR block filler (and plain soft-break) gets margins for first and last occurrences as set above.
+		 * This is ignored in Chrome but Firefox applies this margins.
+		 */
+		margin-top: 0;
+		margin-bottom: 0;
 	}
 }
 

@@ -3,19 +3,20 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { modelList } from './_utils/utils.js';
 import { ListMergeCommand } from '../../src/list/listmergecommand.js';
 
 import { Editor } from '@ckeditor/ckeditor5-core';
 import { Model, _setModelData, _getModelData } from '@ckeditor/ckeditor5-engine';
 
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
-
 describe( 'ListMergeCommand', () => {
 	let editor, model, doc, command, attributeNames;
 	let blocksChangedByCommands = [];
 
-	testUtils.createSinonSandbox();
+	afterEach( () => {
+		vi.restoreAllMocks();
+	} );
 
 	beforeEach( () => {
 		editor = new Editor();
@@ -46,8 +47,10 @@ describe( 'ListMergeCommand', () => {
 			allowAttributesOf: '$text'
 		} );
 
-		sinon.stub( editor.plugins, 'get' ).withArgs( 'ListEditing' ).returns( {
-			getListAttributeNames: () => attributeNames
+		vi.spyOn( editor.plugins, 'get' ).mockImplementation( arg => {
+			if ( arg === 'ListEditing' ) {
+				return { getListAttributeNames: () => attributeNames };
+			}
 		} );
 	} );
 
@@ -449,6 +452,66 @@ describe( 'ListMergeCommand', () => {
 								],
 								changedBlocks: [ 1, 2, 3, 4, 5, 6, 7 ]
 							} );
+						} );
+					} );
+
+					describe( 'previous list block has a higher indent (skip-level lists)', () => {
+						it( 'should merge with previous list item that has a higher indent', () => {
+							runTest( {
+								input: [
+									'    # aaa',
+									'  # []bbb'
+								],
+								expected: [
+									'    # aaa',
+									'      []bbb'
+								],
+								changedBlocks: [ 1 ]
+							} );
+						} );
+
+						it( 'should merge with previous list item that has an even higher indent (multiple-level gap)', () => {
+							runTest( {
+								input: [
+									'      # aaa',
+									'  # []bbb'
+								],
+								expected: [
+									'      # aaa',
+									'        []bbb'
+								],
+								changedBlocks: [ 1 ]
+							} );
+						} );
+
+						it( 'should keep nested children of the merged list item and re-indent them', () => {
+							runTest( {
+								input: [
+									'    # aaa',
+									'  # []bbb',
+									'    # ccc'
+								],
+								expected: [
+									'    # aaa',
+									'      []bbb',
+									'      # ccc'
+								],
+								changedBlocks: [ 1, 2 ]
+							} );
+						} );
+
+						it( 'should not throw when previous sibling is not a list item (defensive guard)', () => {
+							_setModelData( model, modelList( [
+								'foo',
+								'  # []bbb'
+							] ) );
+
+							expect( () => command.execute() ).to.not.throw();
+
+							expect( _getModelData( model ) ).to.equalMarkup( modelList( [
+								'foo',
+								'  # []bbb'
+							] ) );
 						} );
 					} );
 				} );

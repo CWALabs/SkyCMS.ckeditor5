@@ -10,6 +10,7 @@ import { Heading } from '@ckeditor/ckeditor5-heading';
 import { Bold, Underline, Italic, Strikethrough } from '@ckeditor/ckeditor5-basic-styles';
 import { Link } from '@ckeditor/ckeditor5-link';
 import { List, ListProperties } from '@ckeditor/ckeditor5-list';
+import { stubUid } from '@ckeditor/ckeditor5-list/tests/list/_utils/uid.js';
 import { Image } from '@ckeditor/ckeditor5-image';
 import { Table, TableProperties, TableCellProperties } from '@ckeditor/ckeditor5-table';
 import { FontBackgroundColor, FontColor } from '@ckeditor/ckeditor5-font';
@@ -20,14 +21,9 @@ import { PasteFromOffice } from '../../src/pastefromoffice.js';
 import { generateTests } from '../_utils/utils.js';
 import * as fixtures from '../_utils/fixtures.js';
 
-import { stubUid } from '@ckeditor/ckeditor5-list/tests/list/_utils/uid.js';
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
-
 const browsers = [ 'chrome', 'firefox', 'safari', 'edge' ];
 
 describe( 'PasteFromOffice - integration', () => {
-	testUtils.createSinonSandbox();
-
 	beforeEach( () => {
 		stubUid();
 	} );
@@ -38,7 +34,8 @@ describe( 'PasteFromOffice - integration', () => {
 			plugins: [ Clipboard, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, PasteFromOffice ]
 		},
 		skip: {
-			safari: [ 'italicStartingText', 'multipleStylesSingleLine', 'multipleStylesMultiline' ] // Skip due to spacing issue (#13).
+			// Skip due to spacing issue (https://github.com/ckeditor/ckeditor5-paste-from-office/issues/13).
+			safari: [ 'italicStartingText', 'multipleStylesSingleLine', 'multipleStylesMultiline' ]
 		}
 	} );
 
@@ -61,7 +58,7 @@ describe( 'PasteFromOffice - integration', () => {
 			plugins: [ Clipboard, Paragraph, Heading, Bold, Link, ShiftEnter, PasteFromOffice ]
 		},
 		skip: {
-			safari: [ 'combined' ] // Skip due to spacing issue (#13).
+			safari: [ 'combined' ] // Skip due to spacing issue (https://github.com/ckeditor/ckeditor5-paste-from-office/issues/13).
 		}
 	} );
 
@@ -71,7 +68,17 @@ describe( 'PasteFromOffice - integration', () => {
 			plugins: [ Clipboard, Paragraph, Heading, Bold, Italic, Underline, Link, List, ListProperties, PasteFromOffice ]
 		},
 		skip: {
-			safari: [ 'heading3Styled' ] // Skip due to spacing issue (#13).
+			safari: [ 'heading3Styled' ] // Skip due to spacing issue (https://github.com/ckeditor/ckeditor5-paste-from-office/issues/13).
+		}
+	} );
+
+	// Same Word inputs as above, but with `list.enableSkipLevelLists: true` so PFO emits intermediate
+	// `<li style="list-style-type:none">` wrappers and the list post-fixer keeps the indent gaps.
+	generateIntegrationTests( {
+		input: 'list-skip-level',
+		editorConfig: {
+			plugins: [ Clipboard, Paragraph, Heading, Bold, Italic, Underline, Link, List, ListProperties, PasteFromOffice ],
+			list: { enableSkipLevelLists: true }
 		}
 	} );
 

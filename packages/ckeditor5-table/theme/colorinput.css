@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
@@ -26,7 +26,7 @@
 	& > .ck.ck-dropdown {
 		& > .ck.ck-button.ck-input-color__button {
 			padding: 0;
-			/* Resolving issue with misaligned buttons on Safari (see #10589) */
+			/* Resolving issue with misaligned buttons on Safari (see https://github.com/ckeditor/ckeditor5/issues/10589) */
 			display: flex;
 
 			[dir="ltr"] & {
@@ -38,7 +38,6 @@
 				}
 			}
 
-			/* stylelint-disable-next-line no-descending-specificity */
 			[dir="rtl"] & {
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;

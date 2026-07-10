@@ -15,7 +15,9 @@ import { type ModelItem } from './item.js';
 import { type Operation } from './operation/operation.js';
 import { type ModelRootElement } from './rootelement.js';
 
-import { CKEditorError, EmitterMixin } from '@ckeditor/ckeditor5-utils';
+import { CKEditorError, EmitterMixin, type EmitterMixinConstructor } from '@ckeditor/ckeditor5-utils';
+
+const ModelLivePositionBase: EmitterMixinConstructor<typeof ModelPosition> = /* #__PURE__ */ EmitterMixin( ModelPosition );
 
 /**
  * `ModelLivePosition` is a type of {@link module:engine/model/position~ModelPosition Position}
@@ -30,7 +32,7 @@ import { CKEditorError, EmitterMixin } from '@ckeditor/ckeditor5-utils';
  * have to be unbound.
  * Use {@link module:engine/model/liveposition~ModelLivePosition#detach} whenever you don't need `ModelLivePosition` anymore.
  */
-export class ModelLivePosition extends /* #__PURE__ */ EmitterMixin( ModelPosition ) {
+export class ModelLivePosition extends ModelLivePositionBase {
 	/**
 	 * Root of the position path.
 	 */
@@ -112,7 +114,7 @@ export class ModelLivePosition extends /* #__PURE__ */ EmitterMixin( ModelPositi
 // Proper overload would interfere with that.
 ModelLivePosition.prototype.is = function( type: string ): boolean {
 	return type === 'livePosition' || type === 'model:livePosition' ||
-		// From super.is(). This is highly utilised method and cannot call super. See ckeditor/ckeditor5#6529.
+		// From super.is(). This is highly utilised method and cannot call super. See https://github.com/ckeditor/ckeditor5/issues/6529.
 		type == 'position' || type === 'model:position';
 } as any;
 

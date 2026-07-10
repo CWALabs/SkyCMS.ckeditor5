@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
@@ -65,7 +65,6 @@
 	&.ck-splitbutton_open {
 		border-radius: var(--ck-rounded-corners-radius);
 
-		/* stylelint-disable-next-line no-descending-specificity */
 		& > .ck-splitbutton__action {
 			border-bottom-left-radius: 0;
 		}
@@ -112,6 +111,32 @@
 			}
 		}
 	}
+
+	/* The button should display as a regular drop-down if the action button
+	is forced to fire the same action as the arrow button. */
+	&.ck-splitbutton_flatten {
+		&:hover,
+		&.ck-splitbutton_open {
+			& > .ck-splitbutton__action:not(.ck-disabled),
+			& > .ck-splitbutton__arrow:not(.ck-disabled),
+			& > .ck-splitbutton__arrow:not(.ck-disabled):not(:hover) {
+				background-color: var(--ck-color-button-on-background);
+
+				&::after {
+					display: none;
+				}
+			}
+		}
+
+		&.ck-splitbutton_open:hover {
+			& > .ck-splitbutton__action:not(.ck-disabled),
+			& > .ck-splitbutton__arrow:not(.ck-disabled),
+			& > .ck-splitbutton__arrow:not(.ck-disabled):not(:hover) {
+				background-color: var(--ck-color-button-on-hover-background);
+			}
+		}
+	}
+
 	/* Enable font size inheritance, which allows fluid UI scaling. */
 	font-size: inherit;
 }

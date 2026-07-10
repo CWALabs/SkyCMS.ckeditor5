@@ -14,16 +14,15 @@ import {
 	secureSourceElement,
 	normalizeRootsConfig,
 	normalizeSingleRootEditorConstructorParams,
-	type EditorConfig,
-	type EditorReadyEvent
-} from '@ckeditor/ckeditor5-core';
-
-import { CKEditorError } from '@ckeditor/ckeditor5-utils';
+	registerAndInitializeRootConfigAttributes,
+	verifyRootElements,
 
 import { InlineEditorUI } from './inlineeditorui.js';
 import { InlineEditorUIView } from './inlineeditoruiview.js';
 
 import { isElement as _isElement } from 'es-toolkit/compat';
+
+const InlineEditorBase: ElementApiMixinConstructor<typeof Editor> = /* #__PURE__ */ ElementApiMixin( Editor );
 
 /**
  * The inline editor implementation. It uses an inline editable and a floating toolbar.
@@ -32,7 +31,7 @@ import { isElement as _isElement } from 'es-toolkit/compat';
  * In order to create a inline editor instance, use the static
  * {@link module:editor-inline/inlineeditor~InlineEditor.create `InlineEditor.create()`} method.
  */
-export class InlineEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
+export class InlineEditor extends InlineEditorBase {
 	/**
 	 * @inheritDoc
 	 */
@@ -81,29 +80,24 @@ export class InlineEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
 
 		normalizeRootsConfig( sourceElementOrData, this.config );
 
-		// From this point use only normalized `roots.main.element`.
-		const sourceElement = this.config.get( 'roots' )!.main.element;
+		// `normalizeRootsConfig()` reshaped this into a canonical form (HTMLElement or ViewRootElementDefinition).
+		const editableElement = this.config.get( 'roots' )!.main.element as HTMLElement | ViewRootElementDefinition | undefined;
 
-		if ( isElement( sourceElement ) ) {
-			if ( sourceElement.tagName === 'TEXTAREA' ) {
-				// Documented in core/editor/editor.js
-				// eslint-disable-next-line ckeditor5-rules/ckeditor-error-message
-				throw new CKEditorError( 'editor-wrong-element', null );
-			}
-
-			this.sourceElement = sourceElement;
-			secureSourceElement( this, sourceElement );
+		if ( isElement( editableElement ) ) {
+			this.sourceElement = editableElement;
+			secureSourceElement( this, editableElement );
 		}
 
 		this.config.define( 'menuBar.isVisible', false );
 
-		this.model.document.createRoot();
+		this.model.document.createRoot( this.config.get( 'roots' )!.main.modelElement );
+		registerAndInitializeRootConfigAttributes( this );
 
 		const shouldToolbarGroupWhenFull = !this.config.get( 'toolbar.shouldNotGroupWhenFull' );
 
 		const menuBarConfig = this.config.get( 'menuBar' )!;
 
-		const view = new InlineEditorUIView( this.locale, this.editing.view, this.sourceElement, {
+		const view = new InlineEditorUIView( this.locale, this.editing.view, editableElement, {
 			shouldToolbarGroupWhenFull,
 			useMenuBar: menuBarConfig.isVisible,
 			label: this.config.get( 'roots' )!.main.label
@@ -120,19 +114,22 @@ export class InlineEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
 	 * {@link module:core/editor/editorconfig~EditorConfig#updateSourceElementOnDestroy `updateSourceElementOnDestroy`}
 	 * configuration option is set to `true`.
 	 */
-	public override destroy(): Promise<unknown> {
+	public override async destroy(): Promise<unknown> {
 		// Cache the data, then destroy.
 		// It's safe to assume that the model->view conversion will not work after super.destroy().
 		const data = this.getData();
 
 		this.ui.destroy();
 
-		return super.destroy()
-			.then( () => {
-				if ( this.sourceElement ) {
-					this.updateSourceElement( data );
-				}
-			} );
+		await super.destroy();
+
+		if ( this.sourceElement ) {
+			this.updateSourceElement( data );
+		}
+
+		// To satisfy the return type and to keep it backward compatible.
+		// eslint-disable-next-line no-useless-return
+		return;
 	}
 
 	/**
@@ -312,21 +309,25 @@ export class InlineEditor extends /* #__PURE__ */ ElementApiMixin( Editor ) {
 	 */
 	public static override create( sourceElementOrData: HTMLElement | string, config: EditorConfig ): Promise<InlineEditor>;
 
-	public static override create(
+	public static override async create(
 		sourceElementOrDataOrConfig: HTMLElement | string | EditorConfig,
 		config: EditorConfig = {}
 	): Promise<InlineEditor> {
-		return new Promise( resolve => {
-			const editor = new this( sourceElementOrDataOrConfig as any, config );
+		const editor = new this( sourceElementOrDataOrConfig as any, config );
 
-			resolve(
-				editor.initPlugins()
-					.then( () => editor.ui.init() )
-					.then( () => editor.data.init( editor.config.get( 'roots' )!.main.initialData! ) )
-					.then( () => editor.fire<EditorReadyEvent>( 'ready' ) )
-					.then( () => editor )
-			);
-		} );
+		await editor.initPlugins();
+
+		// Roots are created in the editor constructor (before plugins are loaded), but the schema is only fully
+		// built after plugins register their items during init(). Custom root element names (e.g. registered by a
+		// plugin) may not exist in the schema at construction time, so we defer this check until here.
+		verifyRootElements( editor );
+
+		await editor.ui.init();
+		await editor.data.init( editor.config.get( 'roots' )!.main.initialData! );
+
+		editor.fire<EditorReadyEvent>( 'ready' );
+
+		return editor;
 	}
 }
 

@@ -18,6 +18,16 @@ function initEditor() {
 	ClassicEditor
 		.create( {
 			attachTo: document.querySelector( '#editor' ),
+			root: {
+				modelAttributes: {
+					section: 'test'
+				},
+				element: {
+					styles: {
+						'min-height': '200px'
+					}
+				}
+			},
 			plugins: [ Enter, Typing, Paragraph, Undo, Heading, Bold, Italic ],
 			toolbar: [ 'heading', '|', 'bold', 'italic', 'undo', 'redo' ],
 			menuBar: { isVisible: true }
@@ -52,3 +62,5 @@ function destroyEditor() {
 
 document.getElementById( 'initEditor' ).addEventListener( 'click', initEditor );
 document.getElementById( 'destroyEditor' ).addEventListener( 'click', destroyEditor );
+
+initEditor();

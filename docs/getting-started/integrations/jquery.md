@@ -9,7 +9,7 @@ modified_at: 2025-09-08
 
 # Integrating CKEditor&nbsp;5 with jQuery using npm
 
-This guide will walk you through the process of integrating CKEditor&nbsp;5 with jQuery using npm packages. jQuery is a fast, small, and feature-rich JavaScript library that simplifies HTML document traversal and manipulation, event handling, and animation. By combining it with CKEditor&nbsp;5 using npm packages, you can leverage jQuery's powerful DOM manipulation capabilities while enjoying the rich editing experience that CKEditor&nbsp;5 provides.
+You can use the CKEditor&nbsp;5 rich-text editor in a [jQuery](https://jquery.com/) project by installing the CKEditor&nbsp;5 npm packages and initializing the editor on a DOM element selected with jQuery.
 
 {@snippet getting-started/use-builder}
 
@@ -76,7 +76,7 @@ $( document ).ready( () => {
 
 Pass the imported plugins inside the configuration to the `create()` method and add toolbar items where applicable.
 
-The first argument in the `create()` function is a DOM element for the editor placement, so you need to add it to your HTML page.
+The `create()` configuration uses the `attachTo` property to accept a DOM element, so you must ensure this element is added to your HTML page.
 
 ```html
 <div id="editor">

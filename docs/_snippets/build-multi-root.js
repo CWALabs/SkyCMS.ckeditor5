@@ -6,14 +6,11 @@
 import {
 	MultiRootEditor as MultiRootEditorBase,
 	Essentials,
-	CKFinderUploadAdapter,
 	Autoformat,
 	Bold,
 	Italic,
 	BlockQuote,
 	CKBox,
-	CKFinder,
-	EasyImage,
 	Heading,
 	Image,
 	ImageCaption,
@@ -37,14 +34,11 @@ import {
 export class MultiRootEditor extends MultiRootEditorBase {
 	static builtinPlugins = [
 		Essentials,
-		CKFinderUploadAdapter,
 		Autoformat,
 		Bold,
 		Italic,
 		BlockQuote,
 		CKBox,
-		CKFinder,
-		EasyImage,
 		Heading,
 		Image,
 		ImageCaption,
@@ -84,6 +78,9 @@ export class MultiRootEditor extends MultiRootEditorBase {
 				'toggleImageCaption',
 				'imageTextAlternative'
 			]
+		},
+		list: {
+			enableSkipLevelLists: true
 		}
 	};
 }

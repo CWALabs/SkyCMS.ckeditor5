@@ -6,14 +6,11 @@
 import {
 	BalloonEditor as BalloonEditorBase,
 	Essentials,
-	CKFinderUploadAdapter,
 	Autoformat,
 	Bold,
 	Italic,
 	BlockQuote,
 	CKBox,
-	CKFinder,
-	EasyImage,
 	Heading,
 	Image,
 	ImageCaption,
@@ -38,14 +35,11 @@ export class BalloonEditor extends BalloonEditorBase {
 	static builtinPlugins = [
 		Essentials,
 		Paragraph,
-		CKFinderUploadAdapter,
 		Autoformat,
 		Bold,
 		Italic,
 		BlockQuote,
 		CKBox,
-		CKFinder,
-		EasyImage,
 		Heading,
 		Image,
 		ImageCaption,
@@ -84,6 +78,9 @@ export class BalloonEditor extends BalloonEditorBase {
 				'toggleImageCaption',
 				'imageTextAlternative'
 			]
+		},
+		list: {
+			enableSkipLevelLists: true
 		}
 	};
 }

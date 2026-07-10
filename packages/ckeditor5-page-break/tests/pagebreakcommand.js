@@ -3,16 +3,14 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { _getModelData, _setModelData } from '@ckeditor/ckeditor5-engine';
 import { PageBreakEditing } from '../src/pagebreakediting.js';
 
 describe( 'PageBreakCommand', () => {
 	let editor, model, editorElement, command;
-
-	testUtils.createSinonSandbox();
 
 	beforeEach( () => {
 		editorElement = document.createElement( 'div' );
@@ -29,11 +27,10 @@ describe( 'PageBreakCommand', () => {
 			} );
 	} );
 
-	afterEach( () => {
-		return editor.destroy()
-			.then( () => {
-				editorElement.remove();
-			} );
+	afterEach( async () => {
+		await editor.destroy();
+		editorElement.remove();
+		vi.restoreAllMocks();
 	} );
 
 	describe( 'isEnabled', () => {
@@ -42,19 +39,39 @@ describe( 'PageBreakCommand', () => {
 				_setModelData( model, '[]' );
 
 				command.refresh();
-				expect( command.isEnabled ).to.be.true;
+				expect( command.isEnabled ).toBe( true );
 			} );
+		} );
+
+		it( 'should be true when the selection is directly in a root that has a non-$root element name', () => {
+			model.schema.register( 'customRoot', {
+				isLimit: true
+			} );
+			model.schema.extend( 'pageBreak', {
+				allowIn: 'customRoot'
+			} );
+
+			const root = model.document.createRoot( 'customRoot', 'custom' );
+
+			model.change( writer => {
+				writer.setSelection( writer.createRange(
+					writer.createPositionAt( root, 0 )
+				) );
+			} );
+
+			command.refresh();
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is in empty block', () => {
 			_setModelData( model, '<paragraph>[]</paragraph>' );
 
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection directly in a paragraph', () => {
 			_setModelData( model, '<paragraph>foo[]</paragraph>' );
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection directly in a block', () => {
@@ -62,13 +79,13 @@ describe( 'PageBreakCommand', () => {
 			editor.conversion.for( 'downcast' ).elementToElement( { model: 'block', view: 'block' } );
 
 			_setModelData( model, '<block>foo[]</block>' );
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is on another page break element', () => {
 			_setModelData( model, '[<pageBreak></pageBreak>]' );
 
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is on another object', () => {
@@ -77,7 +94,7 @@ describe( 'PageBreakCommand', () => {
 
 			_setModelData( model, '[<object></object>]' );
 
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is inside block element inside isLimit element which allows page break', () => {
@@ -104,7 +121,7 @@ describe( 'PageBreakCommand', () => {
 
 			_setModelData( model, '<block><paragraph>[]</paragraph></block>' );
 
-			expect( command.isEnabled ).to.be.false;
+			expect( command.isEnabled ).toBe( false );
 		} );
 	} );
 
@@ -120,13 +137,13 @@ describe( 'PageBreakCommand', () => {
 		it( 'should create a single batch', () => {
 			_setModelData( model, '<paragraph>foo[]</paragraph>' );
 
-			const spy = sinon.spy();
+			const spy = vi.fn();
 
 			model.document.on( 'change', spy );
 
 			command.execute();
 
-			sinon.assert.calledOnce( spy );
+			expect( spy ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( 'should insert a page break in an empty root and select it (a paragraph cannot be inserted)', () => {
@@ -141,7 +158,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal( '[<pageBreak></pageBreak>]' );
+			expect( _getModelData( model ) ).toBe( '[<pageBreak></pageBreak>]' );
 		} );
 
 		it( 'should split an element where selection is placed and insert a page break (non-collapsed selection)', () => {
@@ -149,7 +166,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>f</paragraph><pageBreak></pageBreak><paragraph>[]o</paragraph>'
 			);
 		} );
@@ -159,7 +176,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>fo</paragraph><pageBreak></pageBreak><paragraph>[]o</paragraph>'
 			);
 		} );
@@ -169,7 +186,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><paragraph>[]</paragraph>'
 			);
 		} );
@@ -179,7 +196,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<heading1>foo</heading1><pageBreak></pageBreak><paragraph>[]</paragraph>'
 			);
 		} );
@@ -189,7 +206,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><paragraph>[]</paragraph><media></media>'
 			);
 		} );
@@ -199,7 +216,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<heading1>foo</heading1><pageBreak></pageBreak><paragraph>[]</paragraph><media></media>'
 			);
 		} );
@@ -209,7 +226,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<heading1>foo</heading1><pageBreak></pageBreak><heading1>[]bar</heading1>'
 			);
 		} );
@@ -219,7 +236,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<pageBreak></pageBreak><paragraph>[]</paragraph>'
 			);
 		} );
@@ -229,7 +246,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -239,7 +256,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><heading1>[]bar</heading1>'
 			);
 		} );
@@ -249,7 +266,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<pageBreak></pageBreak><paragraph>[]</paragraph>'
 			);
 		} );
@@ -259,7 +276,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><heading1>[]bar</heading1>'
 			);
 		} );
@@ -269,7 +286,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<heading1>foo</heading1><pageBreak></pageBreak><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -282,7 +299,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -292,7 +309,7 @@ describe( 'PageBreakCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toBe(
 				'<paragraph>foo</paragraph><pageBreak></pageBreak><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -321,7 +338,7 @@ describe( 'PageBreakCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toBe(
 					'<pageBreak pretty="true" smart="true"></pageBreak>' +
 					'<paragraph pretty="true" smart="true">[]</paragraph>'
 				);
@@ -332,7 +349,7 @@ describe( 'PageBreakCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toBe(
 					'<pageBreak pretty="true"></pageBreak>' +
 					'<paragraph pretty="true">[]</paragraph>'
 				);
@@ -343,7 +360,7 @@ describe( 'PageBreakCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toBe(
 					'<pageBreak pretty="true" smart="true"></pageBreak>' +
 					'<paragraph pretty="true" smart="true">[]</paragraph>'
 				);
@@ -357,7 +374,7 @@ describe( 'PageBreakCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toBe(
 					'<pageBreak pretty="true" smart="true"></pageBreak>' +
 					'<paragraph pretty="true" smart="true">[]</paragraph>'
 				);

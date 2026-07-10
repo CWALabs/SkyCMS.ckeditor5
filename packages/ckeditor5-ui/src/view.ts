@@ -19,10 +19,15 @@ import {
 	type CollectionAddEvent,
 	type DecoratedMethodEvent,
 	type Locale,
-	type LocaleTranslate
+	type LocaleTranslate,
+	type ObservableMixinConstructor,
+	type DomEmitterMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import '../theme/index.css';
+
+const ViewBase: DomEmitterMixinConstructor<ObservableMixinConstructor> =
+	/* #__PURE__ */ DomEmitterMixin( /* #__PURE__ */ ObservableMixin() );
 
 /**
  * The basic view class, which represents an HTML element created out of a
@@ -88,11 +93,15 @@ import '../theme/index.css';
  * 	console.log( 'The view has been clicked!' );
  * } );
  * ```
+ *
+ * @property {TElement | null} element An HTML element of the view. `null` until {@link module:ui/view~View#render rendered}
+ * from the {@link module:ui/view~View#template template}. The class-level example above illustrates typical usage. The
+ * full description, fenced examples, and assignment note are in the block comment immediately above the `element` field
+ * in the source.
  */
 export class View<TElement extends HTMLElement = HTMLElement>
-	extends /* #__PURE__ */ DomEmitterMixin( /* #__PURE__ */ ObservableMixin() )
-{
-	/**
+	extends ViewBase {
+	/*
 	 * An HTML element of the view. `null` until {@link #render rendered}
 	 * from the {@link #template}.
 	 *

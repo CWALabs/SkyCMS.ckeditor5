@@ -78,7 +78,7 @@
 		"api/plugins.html": "framework/tutorials/crash-course/plugins.html",
 		"api/theme-lark.html": "framework/deep-dive/ui/theme-customization.html",
 		"api/video.html": "api/media-embed.html",
-		"builds/guides/browser-compatibility.html": "support/browser-compatibility.html",
+		"builds/guides/browser-compatibility.html": "updating/technology-upgrades-policy.html",
 		"builds/guides/development/custom-builds.html": "updating/nim-migration/customized-builds.html",
 		"builds/guides/development/dll-builds-collaboration-features.html": "updating/nim-migration/dll-builds.html",
 		"builds/guides/development/dll-builds.html": "updating/nim-migration/dll-builds.html",
@@ -162,7 +162,8 @@
 		"features/collaboration/track-changes.html": "features/collaboration/track-changes/track-changes.html",
 		"features/content-filter.html": "features/pasting/paste-from-google-docs.html#automatic-content-filtering",
 		"features/easy-image.html": "features/images/image-upload/image-upload.html",
-		"features/easy-video.html": "features/media-embed.html",
+		"features/easy-video.html": "features/media-embed/media-embed.html",
+		"features/media-embed.html": "features/media-embed/media-embed.html",
 		"features/emoji-panel.html": "features/emoji.html",
 		"features/export-pdf.html": "features/converters/export-pdf.html",
 		"features/export-word.html": "features/converters/export-word.html",
@@ -170,7 +171,7 @@
 		"features/horizontal-rule.html": "features/horizontal-line.html",
 		"features/html-comments.html": "features/html/html-comments.html",
 		"features/html-embed.html": "features/html/html-embed.html",
-		"features/iframe-embed.html": "features/media-embed.html",
+		"features/iframe-embed.html": "features/media-embed/media-embed.html",
 		"features/image-upload.html": "features/images/image-upload/image-upload.html",
 		"features/image-upload/base64-upload-adapter.html": "features/images/image-upload/base64-upload-adapter.html",
 		"features/image-upload/ckfinder.html": "features/file-management/ckfinder.html",
@@ -215,8 +216,8 @@
 		"features/toolbar/menubar.html": "getting-started/setup/menubar.html",
 		"features/toolbar/toolbar.html": "getting-started/setup/toolbar.html",
 		"features/ui-language.html": "getting-started/setup/ui-language.html",
-		"features/video-upload.html": "features/media-embed.html",
-		"features/video.html": "features/media-embed.html",
+		"features/video-upload.html": "features/media-embed/media-embed.html",
+		"features/video.html": "features/media-embed/media-embed.html",
 		"framework/contributing/git-commit-message-convention.html": "framework/contributing/changelog-entries.html",
 		"framework/development-tools.html": "framework/develpment-tools/inspector.html",
 		"framework/guides/architecture/core-editor-architecture.html": "framework/architecture/core-editor-architecture.html",
@@ -268,7 +269,7 @@
 		"framework/guides/plugins/simple-plugin/abbreviation-plugin-level-2.html": "framework/tutorials/abbreviation-plugin/abbreviation-plugin-level-2.html",
 		"framework/guides/plugins/simple-plugin/abbreviation-plugin-level-3.html": "framework/tutorials/abbreviation-plugin/abbreviation-plugin-level-3.html",
 		"framework/guides/quick-start.html": "framework/index.html",
-		"framework/guides/support/browser-compatibility.html": "support/browser-compatibility.html",
+		"framework/guides/support/browser-compatibility.html": "updating/technology-upgrades-policy.html",
 		"framework/guides/support/error-codes.html": "support/error-codes.html",
 		"framework/guides/support/getting-support.html": "support/getting-support.html",
 		"framework/guides/support/reporting-issues.html": "support/reporting-issues.html",
@@ -388,29 +389,7 @@
 		"installation/plugins/features-html-output-overview.html": "framework/architecture/plugins.html#plugins-and-html-output",
 		"installation/plugins/installing-plugins.html": "getting-started/setup/configuration.html",
 		"installation/plugins/plugins.html": "framework/architecture/plugins.html",
-		"support/faq.html": "examples/how-tos.html",
-		"support/getting-support.html": "support/index.html",
-		"support/license-and-legal.html": "getting-started/licensing/license-and-legal.html",
-		"support/license-and-legal": "getting-started/licensing/license-and-legal",
-		"support/licensing/license-and-legal.html": "getting-started/licensing/license-and-legal.html",
-		"support/licensing/license-key-and-activation.html": "getting-started/licensing/license-key-and-activation.html",
-		"support/managing-ckeditor-logo.html": "getting-started/licensing/managing-ckeditor-logo.html",
-		"support/reporting-issues.html": "support/index.html#reporting-issues",
-		"support/versioning-policy.html": "updating/versioning-policy.html",
-		"tutorials/abbreviation-plugin/abbreviation-plugin-level-1.html": "framework/tutorials/abbreviation-plugin/abbreviation-plugin-level-1.html",
-		"tutorials/abbreviation-plugin/abbreviation-plugin-level-2.html": "framework/tutorials/abbreviation-plugin/abbreviation-plugin-level-2.html",
-		"tutorials/abbreviation-plugin/abbreviation-plugin-level-3.html": "framework/tutorials/abbreviation-plugin/abbreviation-plugin-level-3.html",
-		"tutorials/crash-course/commands.html": "framework/tutorials/crash-course/commands.html",
-		"tutorials/crash-course/data-conversion.html": "framework/tutorials/crash-course/data-conversion.html",
-		"tutorials/crash-course/editor.html": "framework/tutorials/crash-course/editor.html",
-		"tutorials/crash-course/events-and-observables.html": "framework/tutorials/crash-course/events-and-observables.html",
-		"tutorials/crash-course/keystrokes.html": "framework/tutorials/crash-course/keystrokes.html",
-		"tutorials/crash-course/model-and-schema.html": "framework/tutorials/crash-course/model-and-schema.html",
-		"tutorials/crash-course/plugin-configuration.html": "framework/tutorials/crash-course/plugin-configuration.html",
-		"tutorials/crash-course/plugins.html": "framework/tutorials/crash-course/plugins.html",
-		"tutorials/crash-course/view.html": "framework/tutorials/crash-course/view.html",
-		"tutorials/creating-simple-plugin-timestamp.html": "framework/tutorials/creating-simple-plugin-timestamp.html",
-		"tutorials/index.html": "framework/tutorials/crash-course/editor.html",
+		"support/browser-compatibility.html": "updating/technology-upgrades-policy.html",
 		"tutorials/supporting-multiple-versions.html": "updating/nim-migration/custom-plugins.html",
 		"tutorials/widgets/data-from-external-source.html": "framework/tutorials/widgets/data-from-external-source.html",
 		"tutorials/widgets/implementing-a-block-widget.html": "framework/tutorials/widgets/implementing-a-block-widget.html",
@@ -515,9 +494,9 @@
 	"promobar": {
 		"prefix": {
 			"icon": "premium",
-			"title": "NEW"
+			"title": "WEBINAR"
 		},
-		"message": "Free 14-Day Trial! <a target=\"_blank\" href=\"https://ckeditor.com/ckeditor-5/\">Learn more</a>"
+		"message": "Beyond Disjointed Text Boxes: Orchestrating Every Piece of Content and Its Metadata with CKEditor AI. <a target=\"_blank\" href=\"https://app.zuddl.com/p/a/event/ada452e7-dcc8-4faf-8088-7bb02168dbbd?utm_campaign=ckeditor_ai_multiroot_webinar&utm_source=documentation_banner&utm_medium=referral\">REGISTER NOW!</a>"
 	},
 	"og": {
 		"description": "Learn to install and configure CKEditor 5. Work with the CKEditor 5 Framework, customize it, create plugins, and custom editors. Includes API reference."
@@ -721,6 +700,11 @@
 					"name": "Lists",
 					"id": "features-lists",
 					"slug": "lists"
+				},
+				{
+					"name": "Media embed",
+					"id": "features-media-embed",
+					"slug": "media-embed"
 				},
 				{
 					"name": "Pagination",

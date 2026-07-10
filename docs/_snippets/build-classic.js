@@ -11,7 +11,6 @@ import {
 	Italic,
 	BlockQuote,
 	CKBox,
-	EasyImage,
 	Heading,
 	Image,
 	ImageCaption,
@@ -43,7 +42,6 @@ export class ClassicEditor extends ClassicEditorBase {
 		Italic,
 		BlockQuote,
 		CloudServices,
-		EasyImage,
 		Heading,
 		Image,
 		ImageCaption,
@@ -93,6 +91,9 @@ export class ClassicEditor extends ClassicEditorBase {
 				'tableRow',
 				'mergeTableCells'
 			]
+		},
+		list: {
+			enableSkipLevelLists: true
 		},
 		language: 'en'
 	};

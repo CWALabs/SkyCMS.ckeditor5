@@ -23,7 +23,9 @@ import { isParagraphable, wrapInParagraph } from '../model/utils/autoparagraphin
 
 import { type ViewItem } from '../view/item.js';
 
-import { CKEditorError, EmitterMixin } from '@ckeditor/ckeditor5-utils';
+import { CKEditorError, EmitterMixin, type EmitterMixinConstructor } from '@ckeditor/ckeditor5-utils';
+
+const UpcastDispatcherBase: EmitterMixinConstructor = /* #__PURE__ */ EmitterMixin();
 
 /**
  * Upcast dispatcher is a central point of the view-to-model conversion, which is a process of
@@ -121,7 +123,7 @@ import { CKEditorError, EmitterMixin } from '@ckeditor/ckeditor5-utils';
  * @fires text
  * @fires documentFragment
  */
-export class UpcastDispatcher extends /* #__PURE__ */ EmitterMixin() {
+export class UpcastDispatcher extends UpcastDispatcherBase {
 	/**
 	 * An interface passed by the dispatcher to the event callbacks.
 	 */
@@ -183,6 +185,13 @@ export class UpcastDispatcher extends /* #__PURE__ */ EmitterMixin() {
 
 	/**
 	 * Starts the conversion process. The entry point for the conversion.
+	 *
+	 * **Note:** The default `context` value is `[ '$root' ]`, which only matches the generic root. When the editor uses
+	 * a custom root {@link module:core/editor/editorconfig~RootConfig#modelElement `modelElement`}, pass the target
+	 * {@link module:engine/model/rootelement~ModelRootElement root element} (or its configured model element name)
+	 * explicitly, otherwise the conversion result may be wrong.
+	 * See the {@glink framework/deep-dive/schema#custom-root-elements Custom root elements} section of the
+	 * {@glink framework/deep-dive/schema Schema deep-dive} guide for more details.
 	 *
 	 * @fires element
 	 * @fires text

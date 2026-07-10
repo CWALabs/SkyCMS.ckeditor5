@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2026, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
@@ -18,7 +18,7 @@
 		min-width: 50px;
 
 		& img {
-			/* Prevent unnecessary margins caused by line-height (see #44). */
+			/* Prevent unnecessary margins caused by line-height (see https://github.com/ckeditor/ckeditor5/issues/44). */
 			display: block;
 
 			/* Center the image if its width is smaller than the content's width. */

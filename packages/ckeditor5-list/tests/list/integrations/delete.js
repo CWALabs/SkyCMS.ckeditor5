@@ -3,12 +3,14 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { describe, it, beforeEach, afterEach, vi } from 'vitest';
+
 import { ListEditing } from '../../../src/list/listediting.js';
 
 import { Delete } from '@ckeditor/ckeditor5-typing';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
+import { BlockQuoteEditing } from '@ckeditor/ckeditor5-block-quote';
 import { Widget, toWidget } from '@ckeditor/ckeditor5-widget';
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import {
@@ -29,7 +31,9 @@ describe( 'ListEditing integrations: backspace & delete', () => {
 		commandSpies,
 		mergeBackwardCommandExecuteSpy, mergeForwardCommandExecuteSpy, splitAfterCommandExecuteSpy, outdentCommandExecuteSpy;
 
-	testUtils.createSinonSandbox();
+	afterEach( () => {
+		vi.restoreAllMocks();
+	} );
 
 	beforeEach( async () => {
 		element = document.createElement( 'div' );
@@ -86,10 +90,10 @@ describe( 'ListEditing integrations: backspace & delete', () => {
 		mergeBackwardCommand = editor.commands.get( 'mergeListItemBackward' );
 		mergeForwardCommand = editor.commands.get( 'mergeListItemForward' );
 
-		splitAfterCommandExecuteSpy = sinon.spy();
-		outdentCommandExecuteSpy = sinon.spy();
-		mergeBackwardCommandExecuteSpy = sinon.spy();
-		mergeForwardCommandExecuteSpy = sinon.spy();
+		splitAfterCommandExecuteSpy = vi.fn();
+		outdentCommandExecuteSpy = vi.fn();
+		mergeBackwardCommandExecuteSpy = vi.fn();
+		mergeForwardCommandExecuteSpy = vi.fn();
 
 		splitAfterCommand.on( 'execute', splitAfterCommandExecuteSpy );
 		outdentCommand.on( 'execute', outdentCommandExecuteSpy );
@@ -131,7 +135,7 @@ describe( 'ListEditing integrations: backspace & delete', () => {
 	describe( 'backspace (backward)', () => {
 		beforeEach( () => {
 			domEventData = new ViewDocumentDomEventData( view, {
-				preventDefault: sinon.spy()
+				preventDefault: vi.fn()
 			}, {
 				direction: 'backward',
 				unit: 'codePoint',
@@ -3552,7 +3556,7 @@ describe( 'ListEditing integrations: backspace & delete', () => {
 	describe( 'delete (forward)', () => {
 		beforeEach( () => {
 			domEventData = new ViewDocumentDomEventData( view, {
-				preventDefault: sinon.spy()
+				preventDefault: vi.fn()
 			}, {
 				direction: 'forward',
 				unit: 'codePoint',
@@ -6644,6 +6648,139 @@ describe( 'ListEditing integrations: backspace & delete', () => {
 		} );
 	} );
 
+	describe( 'backspace (backward) - skip-level lists', () => {
+		let skipElement, skipEditor, skipModel, skipView;
+		let skipEventInfo, skipDomEventData;
+
+		beforeEach( async () => {
+			skipElement = document.createElement( 'div' );
+			document.body.appendChild( skipElement );
+
+			skipEditor = await ClassicTestEditor.create( skipElement, {
+				plugins: [ ListEditing, Paragraph, Delete ],
+				list: {
+					enableSkipLevelLists: true
+				}
+			} );
+
+			skipModel = skipEditor.model;
+			skipView = skipEditor.editing.view;
+
+			skipEventInfo = new BubblingEventInfo( skipView.document, 'delete' );
+			skipDomEventData = new ViewDocumentDomEventData( skipView, {
+				preventDefault: vi.fn()
+			}, {
+				direction: 'backward',
+				unit: 'codePoint',
+				sequence: 1
+			} );
+		} );
+
+		afterEach( async () => {
+			skipElement.remove();
+
+			await skipEditor.destroy();
+		} );
+
+		it( 'should not throw and should merge the item into the previous one when the previous list block has a higher indent', () => {
+			_setModelData( skipModel, modelList( [
+				'    # aaa',
+				'  # []bbb'
+			] ) );
+
+			expect( () => skipView.document.fire( skipEventInfo, skipDomEventData ) ).to.not.throw();
+
+			expect( _getModelData( skipModel ) ).to.equalMarkup( modelList( [
+				'    # aaa',
+				'      []bbb'
+			] ) );
+		} );
+
+		it( 'should merge the item into the previous one when the previous list block has an even higher indent', () => {
+			_setModelData( skipModel, modelList( [
+				'      # aaa',
+				'  # []bbb'
+			] ) );
+
+			expect( () => skipView.document.fire( skipEventInfo, skipDomEventData ) ).to.not.throw();
+
+			expect( _getModelData( skipModel ) ).to.equalMarkup( modelList( [
+				'      # aaa',
+				'        []bbb'
+			] ) );
+		} );
+
+		it( 'should keep nested children of the merged list item and re-indent them', () => {
+			_setModelData( skipModel, modelList( [
+				'    # aaa',
+				'  # []bbb',
+				'    # ccc'
+			] ) );
+
+			expect( () => skipView.document.fire( skipEventInfo, skipDomEventData ) ).to.not.throw();
+
+			expect( _getModelData( skipModel ) ).to.equalMarkup( modelList( [
+				'    # aaa',
+				'      []bbb',
+				'      # ccc'
+			] ) );
+		} );
+	} );
+
+	// See https://github.com/ckeditor/ckeditor5-commercial/issues/10152.
+	describe( 'backspace (backward) - skip-level lists with a preceding block quote', () => {
+		let element, editor, model, view;
+		let eventInfo, domEventData;
+
+		beforeEach( async () => {
+			element = document.createElement( 'div' );
+			document.body.appendChild( element );
+
+			editor = await ClassicTestEditor.create( element, {
+				plugins: [ ListEditing, Paragraph, Delete, BlockQuoteEditing ],
+				list: {
+					enableSkipLevelLists: true
+				}
+			} );
+
+			model = editor.model;
+			view = editor.editing.view;
+
+			eventInfo = new BubblingEventInfo( view.document, 'delete' );
+			domEventData = new ViewDocumentDomEventData( view, {
+				preventDefault: vi.fn()
+			}, {
+				direction: 'backward',
+				unit: 'codePoint',
+				sequence: 1
+			} );
+		} );
+
+		afterEach( async () => {
+			element.remove();
+
+			await editor.destroy();
+		} );
+
+		it( 'should outdent the item when the preceding list item is inside a block quote', () => {
+			_setModelData( model,
+				'<blockQuote>' +
+					'<paragraph listIndent="0" listItemId="a" listType="numbered">aaa</paragraph>' +
+				'</blockQuote>' +
+				'<paragraph listIndent="1" listItemId="b" listType="numbered">[]bbb</paragraph>'
+			);
+
+			expect( () => view.document.fire( eventInfo, domEventData ) ).to.not.throw();
+
+			expect( _getModelData( model ) ).to.equalMarkup(
+				'<blockQuote>' +
+					'<paragraph listIndent="0" listItemId="a" listType="numbered">aaa</paragraph>' +
+				'</blockQuote>' +
+				'<paragraph listIndent="0" listItemId="b" listType="numbered">[]bbb</paragraph>'
+			);
+		} );
+	} );
+
 	// @param {Iterable.<String>} input
 	// @param {Iterable.<String>} expected
 	// @param {Boolean|Object.<String,Boolean>} eventStopped Boolean when preventDefault() and stop() were called/not called together.
@@ -6658,15 +6795,18 @@ describe( 'ListEditing integrations: backspace & delete', () => {
 		expect( _getModelData( model ) ).to.equalMarkup( modelList( expected ) );
 
 		if ( typeof eventStopped === 'object' ) {
-			expect( domEventData.domEvent.preventDefault.called ).to.equal( eventStopped.preventDefault, 'preventDefault() call' );
+			expect( domEventData.domEvent.preventDefault.mock.calls.length > 0 ).to.equal(
+				eventStopped.preventDefault,
+				'preventDefault() call'
+			);
 			expect( !!eventInfo.stop.called ).to.equal( eventStopped.stop, 'eventInfo.stop() call' );
 		} else {
-			expect( domEventData.domEvent.preventDefault.callCount ).to.equal( eventStopped ? 1 : 0, 'preventDefault() call' );
+			expect( domEventData.domEvent.preventDefault.mock.calls.length ).to.equal( eventStopped ? 1 : 0, 'preventDefault() call' );
 			expect( eventInfo.stop.called ).to.equal( eventStopped ? true : undefined, 'eventInfo.stop() call' );
 		}
 
 		for ( const name in executedCommands ) {
-			expect( commandSpies[ name ].callCount ).to.equal( executedCommands[ name ], `${ name } command call count` );
+			expect( commandSpies[ name ].mock.calls.length ).to.equal( executedCommands[ name ], `${ name } command call count` );
 		}
 
 		expect( blocksChangedByCommands.map( block => block.index ) ).to.deep.equal( changedBlocks, 'changed blocks\' indexes' );

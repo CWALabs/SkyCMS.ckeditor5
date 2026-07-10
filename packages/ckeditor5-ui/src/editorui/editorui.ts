@@ -28,7 +28,8 @@ import {
 	type CollectionAddEvent,
 	type CollectionRemoveEvent,
 	type ObservableSetEvent,
-	type DomEmitter
+	type DomEmitter,
+	type ObservableMixinConstructor
 } from '@ckeditor/ckeditor5-utils';
 
 import type { Editor, ViewportOffsetConfig } from '@ckeditor/ckeditor5-core';
@@ -41,10 +42,12 @@ import type {
 } from '../menubar/menubarview.js';
 import { normalizeMenuBarConfig } from '../menubar/utils.js';
 
+const EditorUIBase: ObservableMixinConstructor = /* #__PURE__ */ ObservableMixin();
+
 /**
  * A class providing the minimal interface that is required to successfully bootstrap any editor UI.
  */
-export abstract class EditorUI extends /* #__PURE__ */ ObservableMixin() {
+export abstract class EditorUI extends EditorUIBase {
 	/**
 	 * The editor that the UI belongs to.
 	 */
@@ -495,7 +498,7 @@ export abstract class EditorUI extends /* #__PURE__ */ ObservableMixin() {
 			// This ensures, the navigation works always the same and no pair of toolbars takes over
 			// (e.g. image and table toolbars when a selected image is inside a cell).
 			// * It could be that the focus went to the toolbar by clicking a toolbar item (e.g. a dropdown). In this case,
-			// there were no candidates so they must be obtained (#12339).
+			// there were no candidates so they must be obtained (https://github.com/ckeditor/ckeditor5/issues/12339).
 			if ( !currentFocusedToolbarDefinition || !candidateDefinitions ) {
 				candidateDefinitions = this._getFocusableCandidateToolbarDefinitions();
 			}

@@ -7,10 +7,7 @@
  * @module mention/mentionui
  */
 
-import {
-	Plugin,
-	type Editor
-} from '@ckeditor/ckeditor5-core';
+import { Plugin, type Editor, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 
 import type {
 	ViewDocumentKeyDownEvent,
@@ -110,8 +107,8 @@ export class MentionUI extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ ContextualBalloon ] as const;
+	public static get requires(): PluginDependenciesOf<[ ContextualBalloon ]> {
+		return [ ContextualBalloon ];
 	}
 
 	/**
@@ -219,7 +216,7 @@ export class MentionUI extends Plugin {
 	public override destroy(): void {
 		super.destroy();
 
-		// Destroy created UI components as they are not automatically destroyed (see ckeditor5#1341).
+		// Destroy created UI components as they are not automatically destroyed (see https://github.com/ckeditor/ckeditor5/issues/1341).
 		this._mentionsView.destroy();
 	}
 
@@ -244,7 +241,7 @@ export class MentionUI extends Plugin {
 
 			const { dropdownLimit: markerDropdownLimit } = this._mentionsConfigurations.get( marker )!;
 
-			// Set to 10 by default for backwards compatibility. See: #10479
+			// Set to 10 by default for backwards compatibility. See: https://github.com/ckeditor/ckeditor5/issues/10479
 			const dropdownLimit = markerDropdownLimit || this.editor.config.get( 'mention.dropdownLimit' ) || 10;
 
 			if ( mentionsView.items.length >= dropdownLimit ) {
@@ -437,6 +434,16 @@ export class MentionUI extends Plugin {
 
 		// If the marker is not in the document happens when the selection had changed and the 'mention' marker was removed.
 		if ( !checkIfStillInCompletionMode( this.editor ) ) {
+			return;
+		}
+
+		// Do not show the mention UI if the mention command is disabled
+		// (e.g. the cursor was moved into a code block after the feed was requested).
+		const mentionCommand = this.editor.commands.get( 'mention' )!;
+
+		if ( !mentionCommand.isEnabled ) {
+			this._hideUIAndRemoveMarker();
+
 			return;
 		}
 

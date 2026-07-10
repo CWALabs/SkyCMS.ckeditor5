@@ -3,16 +3,18 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ClassicTestEditor } from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { _getModelData, _setModelData } from '@ckeditor/ckeditor5-engine';
 import { HorizontalLineEditing } from '../src/horizontallineediting.js';
 
 describe( 'HorizontalLineCommand', () => {
 	let editor, model, editorElement, command;
 
-	testUtils.createSinonSandbox();
+	afterEach( () => {
+		vi.restoreAllMocks();
+	} );
 
 	beforeEach( () => {
 		editorElement = document.createElement( 'div' );
@@ -42,19 +44,39 @@ describe( 'HorizontalLineCommand', () => {
 				_setModelData( model, '[]' );
 
 				command.refresh();
-				expect( command.isEnabled ).to.be.true;
+				expect( command.isEnabled ).toBe( true );
 			} );
+		} );
+
+		it( 'should be true when the selection is directly in a root that has a non-$root element name', () => {
+			model.schema.register( 'customRoot', {
+				isLimit: true
+			} );
+			model.schema.extend( 'horizontalLine', {
+				allowIn: 'customRoot'
+			} );
+
+			const root = model.document.createRoot( 'customRoot', 'custom' );
+
+			model.change( writer => {
+				writer.setSelection( writer.createRange(
+					writer.createPositionAt( root, 0 )
+				) );
+			} );
+
+			command.refresh();
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is in empty block', () => {
 			_setModelData( model, '<paragraph>[]</paragraph>' );
 
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection directly in a paragraph', () => {
 			_setModelData( model, '<paragraph>foo[]</paragraph>' );
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection directly in a block', () => {
@@ -63,13 +85,13 @@ describe( 'HorizontalLineCommand', () => {
 			editor.conversion.for( 'downcast' ).elementToElement( { model: 'block', view: 'block' } );
 
 			_setModelData( model, '<block>foo[]</block>' );
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is on another horizontal line element', () => {
 			_setModelData( model, '[<horizontalLine></horizontalLine>]' );
 
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is on other object', () => {
@@ -78,7 +100,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			_setModelData( model, '[<object></object>]' );
 
-			expect( command.isEnabled ).to.be.true;
+			expect( command.isEnabled ).toBe( true );
 		} );
 
 		it( 'should be true when the selection is inside block element inside isLimit element which allows horizontal line', () => {
@@ -106,7 +128,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			_setModelData( model, '<block><paragraph>[]</paragraph></block>' );
 
-			expect( command.isEnabled ).to.be.false;
+			expect( command.isEnabled ).toBe( false );
 		} );
 	} );
 
@@ -122,13 +144,13 @@ describe( 'HorizontalLineCommand', () => {
 		it( 'should create a single batch', () => {
 			_setModelData( model, '<paragraph>foo[]</paragraph>' );
 
-			const spy = sinon.spy();
+			const spy = vi.fn();
 
 			model.document.on( 'change', spy );
 
 			command.execute();
 
-			sinon.assert.calledOnce( spy );
+			expect( spy ).toHaveBeenCalledOnce();
 		} );
 
 		it( 'should insert a horizontal line in an empty root and select it (a paragraph cannot be inserted)', () => {
@@ -143,7 +165,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal( '[<horizontalLine></horizontalLine>]' );
+			expect( _getModelData( model ) ).toEqual( '[<horizontalLine></horizontalLine>]' );
 		} );
 
 		it( 'should split an element where selection is placed and insert a horizontal line (non-collapsed selection)', () => {
@@ -151,7 +173,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>f</paragraph><horizontalLine></horizontalLine><paragraph>[]o</paragraph>'
 			);
 		} );
@@ -161,7 +183,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>fo</paragraph><horizontalLine></horizontalLine><paragraph>[]o</paragraph>'
 			);
 		} );
@@ -171,7 +193,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><paragraph>[]</paragraph>'
 			);
 		} );
@@ -181,7 +203,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<heading1>foo</heading1><horizontalLine></horizontalLine><paragraph>[]</paragraph>'
 			);
 		} );
@@ -191,7 +213,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><paragraph>[]</paragraph><media></media>'
 			);
 		} );
@@ -201,7 +223,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<heading1>foo</heading1><horizontalLine></horizontalLine><paragraph>[]</paragraph><media></media>'
 			);
 		} );
@@ -211,7 +233,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<heading1>foo</heading1><horizontalLine></horizontalLine><heading1>[]bar</heading1>'
 			);
 		} );
@@ -221,7 +243,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<horizontalLine></horizontalLine><paragraph>[]</paragraph>'
 			);
 		} );
@@ -231,7 +253,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -241,7 +263,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><heading1>[]bar</heading1>'
 			);
 		} );
@@ -251,7 +273,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<horizontalLine></horizontalLine><paragraph>[]</paragraph>'
 			);
 		} );
@@ -261,7 +283,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><heading1>[]bar</heading1>'
 			);
 		} );
@@ -271,7 +293,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<heading1>foo</heading1><horizontalLine></horizontalLine><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -284,7 +306,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -294,7 +316,7 @@ describe( 'HorizontalLineCommand', () => {
 
 			command.execute();
 
-			expect( _getModelData( model ) ).to.equal(
+			expect( _getModelData( model ) ).toEqual(
 				'<paragraph>foo</paragraph><horizontalLine></horizontalLine><paragraph>[]bar</paragraph>'
 			);
 		} );
@@ -323,7 +345,7 @@ describe( 'HorizontalLineCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toEqual(
 					'<horizontalLine pretty="true" smart="true"></horizontalLine>' +
 					'<paragraph pretty="true" smart="true">[]</paragraph>'
 				);
@@ -334,7 +356,7 @@ describe( 'HorizontalLineCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toEqual(
 					'<horizontalLine pretty="true"></horizontalLine>' +
 					'<paragraph pretty="true">[]</paragraph>'
 				);
@@ -345,7 +367,7 @@ describe( 'HorizontalLineCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toEqual(
 					'<horizontalLine pretty="true" smart="true"></horizontalLine>' +
 					'<paragraph pretty="true" smart="true">[]</paragraph>'
 				);
@@ -359,7 +381,7 @@ describe( 'HorizontalLineCommand', () => {
 
 				command.execute();
 
-				expect( _getModelData( model ) ).to.equalMarkup(
+				expect( _getModelData( model ) ).toEqual(
 					'<horizontalLine pretty="true" smart="true"></horizontalLine>' +
 					'<paragraph pretty="true" smart="true">[]</paragraph>'
 				);

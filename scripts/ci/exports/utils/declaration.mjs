@@ -14,23 +14,16 @@ export class Declaration {
 		type,
 		internal,
 		explicitInternal = false,
-		fileName,
-		lineNumber,
-		baseClasses = []
-	} ) {
-		this.localName = localName;
-		this.type = type;
-		this.references = []; // At start it is populated with names as string, later replaced with declarations while resolving.
-
-		this.internal = internal;
-		this.explicitInternal = explicitInternal;
+		ambient = false,
 
 		this.fileName = fileName;
 		this.lineNumber = lineNumber;
 		this.baseClasses = baseClasses;
+		this.mixinBaseHelperCandidate = mixinBaseHelperCandidate;
+		this.isMixinBaseHelper = false;
 	}
 
-	static create( { localName, type, internal, node, baseClasses = [] } ) {
+	static create( { localName, type, internal, node, baseClasses = [], mixinBaseHelperCandidate = false } ) {
 		const explicitInternal = isInternalNode( node );
 
 		return new Declaration( {
@@ -38,9 +31,11 @@ export class Declaration {
 			type: Declaration.declarationTypes[ type ] || type,
 			internal: internal || explicitInternal,
 			explicitInternal,
+			ambient: node.declare === true,
 			fileName: node.loc.filename,
 			lineNumber: node.loc.start.line,
-			baseClasses
+			baseClasses,
+			mixinBaseHelperCandidate
 		} );
 	}
 

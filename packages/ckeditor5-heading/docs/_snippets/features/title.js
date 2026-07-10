@@ -13,7 +13,6 @@ import {
 	BlockQuote,
 	CKBox,
 	CKBoxImageEdit,
-	EasyImage,
 	Heading,
 	Title,
 	Image,
@@ -52,7 +51,6 @@ BalloonEditor.builtinPlugins = [
 	CKBox,
 	CKBoxImageEdit,
 	CloudServices,
-	EasyImage,
 	Heading,
 	Image,
 	ImageInsert,
@@ -115,6 +113,9 @@ BalloonEditor.defaultConfig = {
 			'tableRow',
 			'mergeTableCells'
 		]
+	},
+	list: {
+		enableSkipLevelLists: true
 	},
 	// This value must be kept in sync with the language defined in webpack.config.js.
 	language: 'en'

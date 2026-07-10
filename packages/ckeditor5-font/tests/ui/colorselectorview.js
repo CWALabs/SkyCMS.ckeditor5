@@ -8,8 +8,8 @@ import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { ColorSelectorView } from '@ckeditor/ckeditor5-ui';
 import { global } from '@ckeditor/ckeditor5-utils';
 import { TestColorPlugin } from '../_utils/testcolorplugin.js';
-import { testUtils } from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { _setModelData } from '@ckeditor/ckeditor5-engine';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe( 'ColorSelectorView', () => {
 	let locale, colorSelectorView;
@@ -73,7 +73,7 @@ describe( 'ColorSelectorView', () => {
 				format: 'hsl'
 			}
 		} );
-		// Grids rendering is deferred (#6192) therefore render happens before appending grids.
+		// Grids rendering is deferred (https://github.com/ckeditor/ckeditor5/issues/6192) therefore render happens before appending grids.
 		colorSelectorView.render();
 		colorSelectorView._appendColorGridsFragment();
 
@@ -84,8 +84,6 @@ describe( 'ColorSelectorView', () => {
 		colorSelectorView.destroy();
 		colorSelectorView.element.remove();
 	} );
-
-	testUtils.createSinonSandbox();
 
 	describe( 'disabled document colors section', () => {
 		let editor, element, dropdown, model;
@@ -131,8 +129,8 @@ describe( 'ColorSelectorView', () => {
 
 			dropdown.isOpen = true;
 
-			expect( colorSelectorView.documentColorsCount ).to.equal( 0 );
-			expect( colorSelectorView.documentColorsLabel ).to.be.undefined;
+			expect( colorSelectorView.documentColorsCount ).toBe( 0 );
+			expect( colorSelectorView.documentColorsLabel ).toBeUndefined();
 		} );
 	} );
 } );

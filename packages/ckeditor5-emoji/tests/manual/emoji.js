@@ -42,7 +42,7 @@ await reloadEditor();
 	element.addEventListener( 'input', async event => {
 		// Clear the internal cache when messing up with the filtering mechanism.
 		if ( event.target.name === 'custom-font' ) {
-			EmojiRepository._results = {};
+			EmojiRepository._cache.clear();
 		}
 
 		await reloadEditor();
@@ -98,14 +98,14 @@ async function reloadEditor() {
 			} ),
 
 		BalloonEditor
-			.create( {
-				...getEditorConfig( {
-					extraPlugins: [ EmojiPicker, BalloonToolbar, Mention ]
-				} ),
-				root: {
-					element: elements.emojiPickerBalloonEditor
-				}
-			} )
+			.create(
+				getEditorConfig( {
+					extraPlugins: [ EmojiPicker, BalloonToolbar, Mention ],
+					root: {
+						element: elements.emojiPickerBalloonEditor
+					}
+				} )
+			)
 			.catch( err => {
 				console.error( err.stack );
 			} )
@@ -117,7 +117,7 @@ async function reloadEditor() {
 	);
 }
 
-function getEditorConfig( { extraPlugins, emojiButtonInToolbar = true } ) {
+function getEditorConfig( { extraPlugins, emojiButtonInToolbar = true, root = {} } ) {
 	const tempDiv = document.createElement( 'div' );
 	tempDiv.appendChild( elements.template.content.cloneNode( true ) );
 	const initialData = tempDiv.innerHTML;
@@ -158,7 +158,9 @@ function getEditorConfig( { extraPlugins, emojiButtonInToolbar = true } ) {
 		menuBar: {
 			isVisible: true
 		},
-		initialData
+		root: {
+			initialData,
+			...root
+		}
 	};
 }
-

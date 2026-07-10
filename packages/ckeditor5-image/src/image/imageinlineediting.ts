@@ -7,7 +7,7 @@
  * @module image/image/imageinlineediting
  */
 
-import { Plugin } from '@ckeditor/ckeditor5-core';
+import { Plugin, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
 import {
 	ClipboardPipeline,
 	type ClipboardInputTransformationEvent,
@@ -17,7 +17,8 @@ import { ViewUpcastWriter, type ViewElement } from '@ckeditor/ckeditor5-engine';
 
 import {
 	downcastImageAttribute,
-	downcastSrcsetAttribute
+	downcastSrcsetAttribute,
+	upcastImg
 } from './converters.js';
 
 import { ImageEditing } from './imageediting.js';
@@ -25,9 +26,9 @@ import { ImageSizeAttributes } from '../imagesizeattributes.js';
 import { ImageTypeCommand } from './imagetypecommand.js';
 import { ImageUtils } from '../imageutils.js';
 import {
-	getImgViewElementMatcher,
 	createInlineImageViewElement,
-	determineImageTypeForInsertionAtSelection
+	determineImageTypeForInsertionAtSelection,
+	isImageTypePlaceable
 } from './utils.js';
 import { ImagePlaceholder } from './imageplaceholder.js';
 
@@ -45,8 +46,20 @@ export class ImageInlineEditing extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ ImageEditing, ImageSizeAttributes, ImageUtils, ImagePlaceholder, ClipboardPipeline ] as const;
+	public static get requires(): PluginDependenciesOf<[
+		ImageEditing,
+		ImageSizeAttributes,
+		ImageUtils,
+		ImagePlaceholder,
+		ClipboardPipeline
+	]> {
+		return [
+			ImageEditing,
+			ImageSizeAttributes,
+			ImageUtils,
+			ImagePlaceholder,
+			ClipboardPipeline
+		];
 	}
 
 	/**
@@ -119,13 +132,7 @@ export class ImageInlineEditing extends Plugin {
 
 		// More image related upcasts are in 'ImageEditing' plugin.
 		conversion.for( 'upcast' )
-			.elementToElement( {
-				view: getImgViewElementMatcher( editor, 'imageInline' ),
-				model: ( viewImage, { writer } ) => writer.createElement(
-					'imageInline',
-					viewImage.hasAttribute( 'src' ) ? { src: viewImage.getAttribute( 'src' ) } : undefined
-				)
-			} );
+			.add( upcastImg( 'imageInline', imageUtils ) );
 	}
 
 	/**
@@ -179,8 +186,17 @@ export class ImageInlineEditing extends Plugin {
 				const selection = model.createSelection( modelRange );
 
 				// Convert block images into inline images only when pasting or dropping into non-empty blocks
-				// and when the block is not an object (e.g. pasting to replace another widget).
-				if ( determineImageTypeForInsertionAtSelection( model.schema, selection ) === 'imageInline' ) {
+				// and when the block is not an object (e.g. pasting to replace another widget). Also force
+				// the unwrap when `imageBlock` cannot land at the target (e.g. inside `$inlineRoot`) - in
+				// that case the heuristic still returns `'imageBlock'` for a blockless selection, but the
+				// resulting `<figure>` would be upcast-stripped.
+				const selectionPosition = selection.getFirstPosition();
+				const canPlaceBlock = !!selectionPosition && isImageTypePlaceable( model.schema, selectionPosition, 'imageBlock' );
+
+				if (
+					!canPlaceBlock ||
+					determineImageTypeForInsertionAtSelection( model.schema, selection ) === 'imageInline'
+				) {
 					const writer = new ViewUpcastWriter( editingView.document );
 
 					// Unwrap <figure class="image"><img .../></figure> -> <img ... />

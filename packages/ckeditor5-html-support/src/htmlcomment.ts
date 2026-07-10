@@ -40,9 +40,15 @@ export class HtmlComment extends Plugin {
 
 		editor.data.processor.skipComments = false;
 
-		// Allow storing comment's content as the $root attribute with the name `$comment:<unique id>`.
+		// Declare the `$comment` attribute on `$root`. Custom roots that opt into the `$root`
+		// attribute chain via `allowAttributesOf: '$root'` get comment support automatically.
+		editor.model.schema.extend( '$root', { allowAttributes: '$comment' } );
+
+		// Allow storing comment's content as a root attribute with the name `$comment:<unique id>`.
+		// Gate the per-comment attribute on the root already allowing the generic `$comment` attribute
+		// so the rule works for any root name.
 		editor.model.schema.addAttributeCheck( ( context, attributeName ) => {
-			if ( context.endsWith( '$root' ) && attributeName.startsWith( '$comment' ) ) {
+			if ( attributeName.startsWith( '$comment:' ) && editor.model.schema.checkAttribute( context, '$comment' ) ) {
 				return true;
 			}
 		} );
@@ -260,7 +266,7 @@ export class HtmlComment extends Plugin {
 	 * @param options.skipBoundaries When set to `true` the range boundaries will be skipped.
 	 * @returns HTML comment IDs
 	 */
-	public getHtmlCommentsInRange( range: ModelRange, { skipBoundaries = false } = {} ): Array<string> {
+	public getHtmlCommentsInRange( range: ModelRange, { skipBoundaries = false }: { skipBoundaries?: boolean } = {} ): Array<string> {
 		const includeBoundaries = !skipBoundaries;
 
 		// Unfortunately, MarkerCollection#getMarkersAtPosition() filters out collapsed markers.

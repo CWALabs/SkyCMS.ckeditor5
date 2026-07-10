@@ -7,8 +7,12 @@
  * @module image/autoimage
  */
 
-import { Plugin, type Editor } from '@ckeditor/ckeditor5-core';
-import { Clipboard, type ClipboardPipeline } from '@ckeditor/ckeditor5-clipboard';
+import { Plugin, type Editor, type PluginDependenciesOf } from '@ckeditor/ckeditor5-core';
+import {
+	Clipboard,
+	type ClipboardInputTransformationEvent,
+	type ClipboardPipeline
+} from '@ckeditor/ckeditor5-clipboard';
 import { ModelLivePosition, ModelLiveRange } from '@ckeditor/ckeditor5-engine';
 import { Undo } from '@ckeditor/ckeditor5-undo';
 import { Delete } from '@ckeditor/ckeditor5-typing';
@@ -30,8 +34,8 @@ export class AutoImage extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get requires() {
-		return [ Clipboard, ImageUtils, Undo, Delete ] as const;
+	public static get requires(): PluginDependenciesOf<[ Clipboard, ImageUtils, Undo, Delete ]> {
+		return [ Clipboard, ImageUtils, Undo, Delete ];
 	}
 
 	/**
@@ -82,7 +86,7 @@ export class AutoImage extends Plugin {
 		// We need to listen on `Clipboard#inputTransformation` because we need to save positions of selection.
 		// After pasting, the content between those positions will be checked for a URL that could be transformed
 		// into an image.
-		this.listenTo( clipboardPipeline, 'inputTransformation', () => {
+		this.listenTo<ClipboardInputTransformationEvent>( clipboardPipeline, 'inputTransformation', () => {
 			const firstRange = modelDocument.selection.getFirstRange()!;
 
 			const leftLivePosition = ModelLivePosition.fromPosition( firstRange.start );
