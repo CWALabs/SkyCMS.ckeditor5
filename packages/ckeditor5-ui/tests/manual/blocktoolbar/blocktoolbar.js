@@ -31,20 +31,6 @@ BalloonEditor
 		window.editor = editor;
 
 		const externalChanges = createExternalChangesSimulator( editor );
-		const leftEdgeToggleButton = document.querySelector( '.toggle-left-edge' );
-		const leftEdgeState = document.querySelector( '.left-edge-state' );
-
-		leftEdgeToggleButton.addEventListener( 'click', () => {
-			document.body.classList.toggle( 'left-edge-mode' );
-
-			const isLeftEdgeMode = document.body.classList.contains( 'left-edge-mode' );
-
-			leftEdgeToggleButton.textContent = isLeftEdgeMode ? 'Disable left-edge mode' : 'Enable left-edge mode';
-			leftEdgeState.textContent = `Left-edge mode: ${ isLeftEdgeMode ? 'on' : 'off' }`;
-
-			// Make sure the UI reacts instantly after layout changes.
-			editor.ui.update();
-		} );
 
 		document.querySelector( '.external-type' ).addEventListener( 'click', () => {
 			externalChanges.wait( 4000 )

@@ -752,6 +752,37 @@ describe( 'MultiRootEditor', () => {
 			} );
 		} );
 
+		it( 'initializes with empty content if legacy config.initialData is set to an empty string', () => {
+			return MultiRootEditor.create( {
+				foo: document.createElement( 'div' ),
+				bar: document.createElement( 'div' )
+			}, {
+				initialData: { foo: '', bar: '' },
+				plugins: [ Paragraph ]
+			} ).then( editor => {
+				expect( editor.getData( { rootName: 'foo' } ) ).toBe( '' );
+				expect( editor.getData( { rootName: 'bar' } ) ).toBe( '' );
+
+				return editor.destroy();
+			} );
+		} );
+
+		it( 'initializes the editor if no roots are specified', () => {
+			return MultiRootEditor.create( {} ).then( editor => editor.destroy() );
+		} );
+
+		it( 'creates editor from config-only', () => {
+			return MultiRootEditor
+				.create( {
+					roots: {
+						foo: { initialData: '<p>Foo</p>' },
+						bar: { initialData: '<p>Bar</p>' }
+					},
+					plugins: [ Paragraph ]
+				} )
+				.then( newEditor => {
+					expect( newEditor.getData( { rootName: 'foo' } ) ).toBe( '<p>Foo</p>' );
+					expect( newEditor.getData( { rootName: 'bar' } ) ).toBe( '<p>Bar</p>' );
 
 					return newEditor.destroy();
 				} );
@@ -850,6 +881,26 @@ describe( 'MultiRootEditor', () => {
 				);
 		} );
 
+		it( 'throws error when source element conflicts with config.roots.<rootName>.element', () => {
+			const fooEl = document.createElement( 'div' );
+			fooEl.innerHTML = '<p>Foo</p>';
+
+			const existingEl = document.createElement( 'div' );
+
+			expect( () => {
+				// eslint-disable-next-line no-new
+				new MultiRootEditor(
+					{ foo: fooEl },
+					{ roots: { foo: { element: existingEl } } }
+				);
+			} ).toThrow( expect.objectContaining( {
+				name: 'CKEditorError',
+				message: expect.stringContaining( 'editor-create-root-element-overspecified' )
+			} ) );
+		} );
+
+		it( 'throws error when deprecated config.lazyRoots is used', () => {
+			return MultiRootEditor.create( editorData, {
 				lazyRoots: [ 'baz' ]
 			} )
 				.then(
@@ -1070,51 +1121,6 @@ describe( 'MultiRootEditor', () => {
 						assertCKEditorError( err, 'multi-root-editor-root-initial-data-mismatch', null );
 					}
 				)
-				.finally( () => {
-					// Cleanup. This is difficult as we don't have editor instance to destroy.
-					document.querySelector( '.ck-body-wrapper' ).remove();
-				} );
-		} );
-
-		it( 'throws error when initial roots are different than initial data - initialData for root removed', done => {
-			// Artificial fake plugin that simulates a change in initialData as the editor is initialized.
-			class ChangeInitialData {
-				constructor( editor ) {
-					this.editor = editor;
-				}
-
-				init() {
-					// Remove initial data for some previously defined root.
-					this.editor.config.set( 'roots', {
-						...this.editor.config.get( 'roots' ),
-						bar: {
-							...this.editor.config.get( 'roots' ).bar,
-							initialData: undefined
-						}
-					} );
-				}
-			}
-
-			MultiRootEditor.create( {
-				foo: document.createElement( 'div' ),
-				bar: document.createElement( 'div' )
-			}, {
-				initialData: {
-					foo: '<p>Foo</p>',
-					bar: '<p>Bar</p>'
-				},
-				extraPlugins: [ ChangeInitialData ]
-			} )
-				.then(
-					() => {
-						expect.fail( 'Multi-root editor should throw an error when initital roots and initial data are mismatched.' );
-					},
-					err => {
-						assertCKEditorError( err, 'multi-root-editor-root-initial-data-mismatch', null );
-					}
-				)
-				.then( done )
-				.catch( done )
 				.finally( () => {
 					// Cleanup. This is difficult as we don't have editor instance to destroy.
 					document.querySelector( '.ck-body-wrapper' ).remove();
@@ -1743,75 +1749,6 @@ describe( 'MultiRootEditor', () => {
 				message: expect.stringContaining( 'editor-wrong-element' )
 			} ) );
 		} );
-
-		it( 'should init the root with given initialData', () => {
-			editor.addRoot( 'bar', { initialData: '<p>Foo.</p>' } );
-
-			expect( editor.getData( { rootName: 'bar' } ) ).to.equal( '<p>Foo.</p>' );
-		} );
-
-		it( 'should add a model root with given modelAttributes', () => {
-			sinon.spy( editor, 'registerRootAttribute' );
-
-			editor.addRoot( 'bar', { modelAttributes: { order: 20, isLocked: true } } );
-
-			const root = editor.model.document.getRoot( 'bar' );
-
-			expect( root.getAttribute( 'order' ) ).to.equal( 20 );
-			expect( root.getAttribute( 'isLocked' ) ).to.be.true;
-
-			expect( editor.registerRootAttribute.calledWithExactly( 'order' ) );
-			expect( editor.registerRootAttribute.calledWithExactly( 'isLocked' ) );
-		} );
-
-		it( 'should set placeholder as root editable option', () => {
-			editor.addRoot( 'bar', { placeholder: 'Type here...' } );
-
-			const root = editor.model.document.getRoot( 'bar' );
-
-			expect( root.getAttribute( '$rootEditableOptions' ) ).to.deep.equal( { placeholder: 'Type here...' } );
-		} );
-
-		it( 'should set label as root editable option', () => {
-			editor.addRoot( 'bar', { label: 'My label' } );
-
-			const root = editor.model.document.getRoot( 'bar' );
-
-			expect( root.getAttribute( '$rootEditableOptions' ) ).to.deep.equal( { label: 'My label' } );
-		} );
-
-		it( 'should set both placeholder and label as root editable options', () => {
-			editor.addRoot( 'bar', { placeholder: 'Type here...', label: 'My label' } );
-
-			const root = editor.model.document.getRoot( 'bar' );
-
-			expect( root.getAttribute( '$rootEditableOptions' ) ).to.deep.equal( {
-				placeholder: 'Type here...',
-				label: 'My label'
-			} );
-		} );
-
-		it( 'should prefer initialData over data', () => {
-			editor.addRoot( 'bar', { initialData: '<p>New.</p>', data: '<p>Old.</p>' } );
-
-			expect( editor.getData( { rootName: 'bar' } ) ).to.equal( '<p>New.</p>' );
-		} );
-
-		it( 'should prefer modelAttributes over attributes', () => {
-			editor.addRoot( 'bar', { modelAttributes: { order: 10 }, attributes: { order: 20 } } );
-
-			const root = editor.model.document.getRoot( 'bar' );
-
-			expect( root.getAttribute( 'order' ) ).to.equal( 10 );
-		} );
-
-		it( 'should log warning when options.element is a DOM element', () => {
-			const el = document.createElement( 'div' );
-
-			editor.addRoot( 'baz', { element: el } );
-
-			sinon.assert.calledWithMatch( console.warn, 'multi-root-editor-add-root-element-option-ignored' );
-		} );
 	} );
 
 	describe( 'detachRoot()', () => {
@@ -2432,40 +2369,6 @@ describe( 'MultiRootEditor', () => {
 				message: expect.stringContaining( 'editor-wrong-element' )
 			} ) );
 		} );
-
-		it( 'should accept options object with placeholder and label', () => {
-			editor.addRoot( 'new' );
-
-			editor.createEditable( editor.model.document.getRoot( 'new' ), { placeholder: 'Type...', label: 'My label' } );
-
-			const editableElement = editor.ui.view.editables.new.element;
-
-			expect( editableElement.children[ 0 ].dataset.placeholder ).to.equal( 'Type...' );
-			expect( editableElement.getAttribute( 'aria-label' ) ).to.equal( 'My label' );
-		} );
-
-		it( 'should use $rootEditableOptions from root attribute as fallback for placeholder and label', () => {
-			editor.addRoot( 'new', { placeholder: 'Root placeholder', label: 'Root label' } );
-
-			editor.createEditable( editor.model.document.getRoot( 'new' ) );
-
-			const editableElement = editor.ui.view.editables.new.element;
-
-			expect( editableElement.children[ 0 ].dataset.placeholder ).to.equal( 'Root placeholder' );
-			expect( editableElement.getAttribute( 'aria-label' ) ).to.equal( 'Root label' );
-		} );
-
-		it( 'should work when root has no $rootEditableOptions attribute', () => {
-			editor.model.change( writer => {
-				writer.addRoot( 'new' );
-			} );
-
-			editor.createEditable( editor.model.document.getRoot( 'new' ) );
-
-			const editableElement = editor.ui.view.editables.new.element;
-
-			expect( editableElement ).to.be.instanceOf( HTMLElement );
-		} );
 	} );
 
 	describe( 'detachEditable()', () => {
@@ -2809,22 +2712,6 @@ describe( 'MultiRootEditor', () => {
 			await editor.destroy();
 		} );
 
-		it( 'should not include $rootEditableOptions', async () => {
-			editor = await MultiRootEditor.create( { foo: '' }, {
-				roots: {
-					foo: {
-						modelAttributes: { order: 10 },
-						placeholder: 'Type here...',
-						label: 'My label'
-					}
-				}
-			} );
-
-			expect( editor.getRootAttributes( 'foo' ) ).to.deep.equal( { order: 10 } );
-
-			await editor.destroy();
-		} );
-
 		it( 'should return attributes added while adding roots', async () => {
 			// Empty multi-root, no roots, no roots attributes.
 			editor = await MultiRootEditor.create( {} );
@@ -3013,28 +2900,6 @@ describe( 'MultiRootEditor', () => {
 				foo: {
 					$rootEditableOptions: explicitOptions
 				}
-			} );
-
-			await editor.destroy();
-		} );
-
-		it( 'should not include $rootEditableOptions', async () => {
-			editor = await MultiRootEditor.create( { foo: '', bar: '' }, {
-				roots: {
-					foo: {
-						modelAttributes: { order: 10 },
-						placeholder: 'Foo placeholder',
-						label: 'Foo label'
-					},
-					bar: {
-						modelAttributes: { order: 20 }
-					}
-				}
-			} );
-
-			expect( editor.getRootsAttributes() ).to.deep.equal( {
-				foo: { order: 10 },
-				bar: { order: 20 }
 			} );
 
 			await editor.destroy();

@@ -43,6 +43,26 @@ export type {
 	EditorConfig,
 	RootConfig,
 	ViewRootElementDefinition,
+	LanguageConfig,
+	ToolbarConfig,
+	ToolbarConfigItem,
+	UiConfig,
+	ViewportOffsetConfig,
+	PoweredByConfig
+} from './editor/editorconfig.js';
+
+export { attachToForm } from './editor/utils/attachtoform.js';
+export { ElementApiMixin, type ElementApi, type ElementApiMixinConstructor } from './editor/utils/elementapimixin.js';
+export { secureSourceElement } from './editor/utils/securesourceelement.js';
+export { registerAndInitializeRootConfigAttributes } from './editor/utils/registerandinitializerootconfigattributes.js';
+export {
+	normalizeRootsConfig,
+	normalizeSingleRootEditorConstructorParams,
+	normalizeMultiRootEditorConstructorParams,
+	normalizeViewRootElementDefinition
+} from './editor/utils/normalizerootsconfig.js';
+export { verifyRootElements } from './editor/utils/verifyrootelements.js';
+export { rootAcceptsBlocks } from './editor/utils/rootacceptsblocks.js';
 
 export { PendingActions, type PendingAction, type PendingActionsAddEvent, type PendingActionsRemoveEvent } from './pendingactions.js';
 

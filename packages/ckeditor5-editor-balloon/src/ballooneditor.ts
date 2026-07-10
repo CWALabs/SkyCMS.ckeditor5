@@ -16,6 +16,13 @@ import {
 	normalizeSingleRootEditorConstructorParams,
 	registerAndInitializeRootConfigAttributes,
 	verifyRootElements,
+	type EditorConfig,
+	type EditorReadyEvent,
+	type ViewRootElementDefinition,
+	type ElementApiMixinConstructor
+} from '@ckeditor/ckeditor5-core';
+
+import { BalloonToolbar } from '@ckeditor/ckeditor5-ui';
 
 import { BalloonEditorUI } from './ballooneditorui.js';
 import { BalloonEditorUIView } from './ballooneditoruiview.js';
