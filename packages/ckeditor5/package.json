@@ -111,7 +111,7 @@
   "devDependencies": {
     "@vitest/browser-playwright": "^4.1.8",
     "@vitest/coverage-v8": "^4.1.8",
-    "vitest": "^4.1.8",
+    "vitest": "^4.1.11",
     "@wiris/mathtype-ckeditor5": "^8.13.1"
   },
   "scripts": {

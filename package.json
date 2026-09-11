@@ -84,7 +84,7 @@
     "typescript": "5.5.4",
     "umberto": "^10.6.1",
     "upath": "^2.0.0",
-    "vitest": "^4.1.8",
+    "vitest": "^4.1.11",
     "wait-on": "^9.0.4"
   },
   "scripts": {

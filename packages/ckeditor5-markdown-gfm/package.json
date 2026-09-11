@@ -79,7 +79,7 @@
     "@ckeditor/ckeditor5-utils": "workspace:*",
     "@vitest/browser-playwright": "^4.1.8",
     "@vitest/coverage-v8": "^4.1.8",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.11"
   },
   "scripts": {
     "build": "node ../../scripts/nim/build-package.mjs",
