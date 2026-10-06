@@ -55,7 +55,7 @@
     "chalk": "^5.0.0",
     "ckbox": "2.12.0",
     "date-fns": "^4.0.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.1",
     "eslint": "^9.34.0",
     "eslint-config-ckeditor5": "^16.0.0",
     "eslint-formatter-stylish": "^8.40.0",
