@@ -211,7 +211,7 @@ importers:
         version: 7.3.6(@types/node@26.0.1)(jiti@2.7.0)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
         specifier: ^2.1.8
-        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
+        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
 
   packages/ckeditor5:
     dependencies:
@@ -9174,8 +9174,8 @@ packages:
     resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
     engines: {node: '>=12'}
 
-  ip-address@10.2.0:
-    resolution: {integrity: sha512-/+S6j4E9AHvW9SWMSEY9Xfy66O5PWvVEJ08O0y5JGyEKQpojb0K0GKpz/v5HJ/G0vi3D2sjGK78119oXZeE0qA==}
+  ip-address@10.7.3:
+    resolution: {integrity: sha512-A1kdq/tSb5QjvKvAMgIoEvDBIgL7qaqVP/jkvSwYYRZ9iEzvPpopxp2wQfu3SuZRHtpHNxMn8Fs0bS+gf5Xmwg==}
     engines: {node: '>= 12'}
 
   is-arguments@1.2.0:
@@ -17808,7 +17808,7 @@ snapshots:
 
   internmap@2.0.3: {}
 
-  ip-address@10.2.0: {}
+  ip-address@10.7.3: {}
 
   is-arguments@1.2.0:
     dependencies:
@@ -20838,7 +20838,7 @@ snapshots:
 
   socks@2.8.9:
     dependencies:
-      ip-address: 10.2.0
+      ip-address: 10.7.3
       smart-buffer: 4.2.0
 
   source-map-js@1.2.1: {}
@@ -21512,7 +21512,7 @@ snapshots:
       terser: 5.48.0
       yaml: 2.9.0
 
-  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
+  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@26.0.1)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0))
