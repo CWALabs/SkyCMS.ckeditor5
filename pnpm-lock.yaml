@@ -211,7 +211,7 @@ importers:
         version: 7.3.6(@types/node@26.0.1)(jiti@2.7.0)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
         specifier: ^2.1.8
-        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
+        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
 
   packages/ckeditor5:
     dependencies:
@@ -10365,8 +10365,8 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
-  morgan@1.11.0:
-    resolution: {integrity: sha512-zSkVu3t18r39pw4ixfBKvfZi3y2UOqr7d4WYwcj3m8nXpEQK4rPO6GLzs/CExoRgmX3y9EjmmcXqv6jq0SK46g==}
+  morgan@1.12.1:
+    resolution: {integrity: sha512-tljKC0ex20AjO58Ob/eZ53JloycbVswbVNCHx6V6VLGzqt/w8dIynVGL0G8qVjNKwiA7sYSogCrN6QtJ82IV+g==}
     engines: {node: '>= 0.8.0'}
 
   mri@1.2.0:
@@ -18225,7 +18225,7 @@ snapshots:
 
   koa-morgan@1.0.1(supports-color@8.1.1):
     dependencies:
-      morgan: 1.11.0(supports-color@8.1.1)
+      morgan: 1.12.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -19261,7 +19261,7 @@ snapshots:
 
   moment@2.30.1: {}
 
-  morgan@1.11.0(supports-color@8.1.1):
+  morgan@1.12.1(supports-color@8.1.1):
     dependencies:
       basic-auth: 2.0.1
       debug: 2.6.9(supports-color@8.1.1)
@@ -21512,7 +21512,7 @@ snapshots:
       terser: 5.48.0
       yaml: 2.9.0
 
-  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
+  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@26.0.1)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0))
