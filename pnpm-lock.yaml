@@ -179,8 +179,8 @@ importers:
         specifier: ^0.34.2
         version: 0.34.5
       svgo:
-        specifier: ^3.3.2
-        version: 3.3.3
+        specifier: ^3.3.5
+        version: 3.3.5
       table:
         specifier: ^6.8.1
         version: 6.9.0
@@ -211,7 +211,7 @@ importers:
         version: 7.3.6(@types/node@26.0.1)(jiti@2.7.0)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
         specifier: ^2.1.8
-        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
+        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
 
   packages/ckeditor5:
     dependencies:
@@ -11827,8 +11827,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  svgo@3.3.3:
-    resolution: {integrity: sha512-+wn7I4p7YgJhHs38k2TNjy1vCfPIfLIJWR5MnCStsN8WuuTcBnRKcMHQLMM2ijxGZmDoZwNv8ipl5aTTen62ng==}
+  svgo@3.3.5:
+    resolution: {integrity: sha512-8SQMzdrvWaD8deUmrnYB+ASyxBVgWUOilg+A75nE/76WdLpj6LopCwiAVvkzkcqy/9b7t2Mg7faFLjg0ZRcZ3w==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -21012,7 +21012,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svgo@3.3.3:
+  svgo@3.3.5:
     dependencies:
       commander: 7.2.0
       css-select: 5.2.2
@@ -21512,7 +21512,7 @@ snapshots:
       terser: 5.48.0
       yaml: 2.9.0
 
-  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
+  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@26.0.1)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0))
