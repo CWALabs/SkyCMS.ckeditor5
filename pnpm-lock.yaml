@@ -211,7 +211,7 @@ importers:
         version: 7.3.6(@types/node@26.0.1)(jiti@2.7.0)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0)
       vitest:
         specifier: ^2.1.8
-        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
+        version: 2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0)
 
   packages/ckeditor5:
     dependencies:
@@ -9765,8 +9765,8 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  linkify-it@5.0.1:
-    resolution: {integrity: sha512-wVoTjP4Q6R0NW5hiZkVJaFZPWgtXfoGF+6LucL3/FtiNjmcHhYjEr5f1Kqjirc1nBW07J/ZuRFumqr2oqccEWg==}
+  linkify-it@5.0.2:
+    resolution: {integrity: sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q==}
 
   lint-staged@16.4.0:
     resolution: {integrity: sha512-lBWt8hujh/Cjysw5GYVmZpFHXDCgZzhrOm8vbcUdobADZNOK/bRshr2kM3DfgrrtR1DQhfupW9gnIXOfiFi+bw==}
@@ -10009,8 +10009,8 @@ packages:
   markdown-it-sup@1.0.0:
     resolution: {integrity: sha512-E32m0nV9iyhRR7CrhnzL5msqic7rL1juWre6TQNxsnApg7Uf+F97JOKxUijg5YwXz86lZ0mqfOnutoryyNdntQ==}
 
-  markdown-it@14.2.0:
-    resolution: {integrity: sha512-1TGiQiJVRQ3NPmZH6sx5Cfnmg6GQm9jvC1ch4TK511NjSJvjzKLzn5pPfZRNZkRPZP0HqCioSndqH8v2nRaWVQ==}
+  markdown-it@14.3.2:
+    resolution: {integrity: sha512-sHHjZ5fJKlgrG4qns2YwVcdNep35h5fERrfkD2YNsb9UFk0UIHarbiTaHKVMlPuWAoiilyK8Fv/jAm11slsY7Q==}
     hasBin: true
 
   markdown-table@3.0.4:
@@ -18403,7 +18403,7 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  linkify-it@5.0.1:
+  linkify-it@5.0.2:
     dependencies:
       uc.micro: 2.1.0
 
@@ -18720,11 +18720,11 @@ snapshots:
 
   markdown-it-sup@1.0.0: {}
 
-  markdown-it@14.2.0:
+  markdown-it@14.3.2:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
-      linkify-it: 5.0.1
+      linkify-it: 5.0.2
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
@@ -21225,7 +21225,7 @@ snapshots:
     dependencies:
       '@gerrit0/mini-shiki': 3.23.0
       lunr: 2.3.9
-      markdown-it: 14.2.0
+      markdown-it: 14.3.2
       minimatch: 10.2.5
       typescript: 5.5.4
       yaml: 2.9.0
@@ -21280,7 +21280,7 @@ snapshots:
       jquery: 3.7.1
       js-beautify: 1.15.4
       lodash: 4.18.1
-      markdown-it: 14.2.0
+      markdown-it: 14.3.2
       markdown-it-abbr: 1.0.4
       markdown-it-deflist: 2.1.0
       markdown-it-emoji: 2.0.2
@@ -21512,7 +21512,7 @@ snapshots:
       terser: 5.48.0
       yaml: 2.9.0
 
-  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9)(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
+  vitest@2.1.9(@types/node@26.0.1)(@vitest/browser@4.1.9(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.9.0))(vitest@4.1.9))(lightningcss@1.33.0)(sass@1.101.0)(supports-color@8.1.1)(terser@5.48.0):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@26.0.1)(lightningcss@1.33.0)(sass@1.101.0)(terser@5.48.0))
