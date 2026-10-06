@@ -52,13 +52,8 @@
     "@vitest/browser-playwright": "^4.1.8",
     "@vitest/coverage-v8": "^4.1.8",
     "es-toolkit": "1.45.1",
-<<<<<<< HEAD
-    "sanitize-html": "^2.13.0",
-    "vitest": "^4.1.11"
-=======
     "sanitize-html": "^2.17.7",
-    "vitest": "^4.1.8"
->>>>>>> origin/skycms/main
+    "vitest": "^4.1.11"
   },
   "scripts": {
     "build": "node ../../scripts/nim/build-package.mjs",
